@@ -19,11 +19,15 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Ensure SQLite file directory exists in deploy environments.
+    # Ensure SQLite file uses an absolute, writable path in deploy environments.
     db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
     if isinstance(db_uri, str) and db_uri.startswith('sqlite:///'):
         sqlite_path = db_uri.replace('sqlite:///', '', 1)
         if sqlite_path and sqlite_path != ':memory:':
+            is_absolute = os.path.isabs(sqlite_path) or (len(sqlite_path) > 1 and sqlite_path[1] == ':')
+            if not is_absolute:
+                sqlite_path = os.path.join(app.instance_path, sqlite_path)
+                app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{sqlite_path}"
             sqlite_dir = os.path.dirname(sqlite_path)
             if sqlite_dir:
                 os.makedirs(sqlite_dir, exist_ok=True)
