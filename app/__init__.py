@@ -19,6 +19,15 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    # Ensure SQLite file directory exists in deploy environments.
+    db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    if isinstance(db_uri, str) and db_uri.startswith('sqlite:///'):
+        sqlite_path = db_uri.replace('sqlite:///', '', 1)
+        if sqlite_path and sqlite_path != ':memory:':
+            sqlite_dir = os.path.dirname(sqlite_path)
+            if sqlite_dir:
+                os.makedirs(sqlite_dir, exist_ok=True)
+
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
