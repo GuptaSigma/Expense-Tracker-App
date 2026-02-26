@@ -123,6 +123,17 @@ SECRET_KEY=your-secret-key-here
 - **OpenRouter API**: [OpenRouter.ai](https://openrouter.ai/keys)
 - **Gold API**: [GoldAPI.io](https://www.goldapi.io/)
 
+### Step 3b: Database (SQLite – no extra setup needed)
+
+By default the app uses **SQLite** (`expense_tracker.db`) so you do **not** need MySQL or PostgreSQL.  
+Tables are created automatically the first time the app starts, so `/register` works on a fresh deploy with no manual migration step.
+
+If you want a different database, set `DATABASE_URL` in your `.env`:
+```env
+# PostgreSQL example
+DATABASE_URL=postgresql://user:password@host/dbname
+```
+
 ### Step 4: Run the App
 
 **Important:** Always activate the virtual environment before running!
