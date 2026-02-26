@@ -17,16 +17,24 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URL',
-        'mysql+pymysql://root:password@localhost:3306/expense_tracker'
+        'sqlite:///expense_tracker.db'
     )
     if SQLALCHEMY_DATABASE_URI.startswith('mysql://'):
         SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace('mysql://', 'mysql+pymysql://', 1)
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_pre_ping': True,
-        'pool_recycle': 280,
-    }
+    # Use SQLite-safe engine options when connecting to SQLite.
+    # check_same_thread=False is safe here because SQLAlchemy's connection
+    # pool ensures each thread gets its own connection.
+    if SQLALCHEMY_DATABASE_URI.startswith('sqlite'):
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            'connect_args': {'check_same_thread': False},
+        }
+    else:
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            'pool_pre_ping': True,
+            'pool_recycle': 280,
+        }
 
     DEBUG = _as_bool('FLASK_DEBUG', False)
     AUTO_CREATE_TABLES = _as_bool('AUTO_CREATE_TABLES', False)
