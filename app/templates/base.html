@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}ExpenseTracker AI{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#0a0a0a',
+                            card: '#1a1a1a',
+                            hover: '#252525',
+                            border: '#2a2a2a',
+                        },
+                        primary: {
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        accent: {
+                            purple: '#a855f7',
+                            pink: '#ec4899',
+                            cyan: '#06b6d4',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1e1b4b 50%, #0a0a0a 100%);
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            min-width: 300px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            border: 1px solid;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+            transform-origin: top right;
+        }
+
+        .toast.success {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #10b981;
+        }
+
+        .toast.error {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+        }
+
+        .toast.warning {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #f59e0b;
+        }
+
+        .toast.info {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.4);
+            color: #6366f1;
+        }
+
+        .toast.achievement {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: rgba(168, 85, 247, 0.4);
+            color: #a855f7;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast.removing {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+        
+        .glow-effect {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(168, 85, 247, 0.2);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        /* Chat Widget Styles - Dark Theme */
+        #chat-widget-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9998;
+        }
+
+        .chat-toggle-btn {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-toggle-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(99, 102, 241, 0.6);
+        }
+
+        .chat-window {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 400px;
+            height: 600px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+            pointer-events: none;
+            transition: all 0.3s ease;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .chat-window.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: all;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            padding: 1.5rem;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: #1a1a1a;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #6366f1;
+            border-radius: 10px;
+        }
+
+        .bot-message p, .bot-message ul {
+            background: rgba(99, 102, 241, 0.1);
+            color: #e5e7eb;
+            padding: 1rem;
+            border-radius: 16px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .user-message p {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 16px;
+            font-size: 14px;
+        }
+
+        .chat-footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(99, 102, 241, 0.2);
+            background: #1a1a1a;
+            border-radius: 0 0 24px 24px;
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-gray-100">
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 backdrop-blur-lg bg-dark-card/80 border-b border-dark-border">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-r from-primary-500 to-accent-purple p-2 rounded-xl">
+                        <i class="bi bi-wallet2 text-2xl text-white"></i>
+                    </div>
+                    <a href="/" class="text-2xl font-bold bg-gradient-to-r from-primary-500 to-accent-purple bg-clip-text text-transparent">
+                        ExpenseTracker AI
+                    </a>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-1">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('main.dashboard') }}" class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-dark-hover transition-all duration-200">
+                            <i class="bi bi-speedometer2 mr-2"></i>Dashboard
+                        </a>
+                        <a href="{{ url_for('main.calculators') }}" class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-dark-hover transition-all duration-200">
+                            <i class="bi bi-calculator mr-2"></i>Calculators
+                        </a>
+                        <a href="{{ url_for('main.market_watch') }}" class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-dark-hover transition-all duration-200">
+                            <i class="bi bi-graph-up mr-2"></i>Market
+                        </a>
+                        <a href="{{ url_for('main.investment_coach') }}" class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-dark-hover transition-all duration-200">
+                            <i class="bi bi-robot mr-2"></i>AI Coach
+                        </a>
+                        <a href="{{ url_for('main.stock_search') }}" class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-dark-hover transition-all duration-200">
+                            <i class="bi bi-search mr-2"></i>Search
+                        </a>
+                        <a href="{{ url_for('main.watchlist') }}" class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-dark-hover transition-all duration-200">
+                            <i class="bi bi-star-fill mr-2"></i>Watchlist
+                        </a>
+                        <a href="{{ url_for('main.achievements') }}" class="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-dark-hover transition-all duration-200">
+                            <i class="bi bi-trophy-fill mr-2"></i>Achievements
+                        </a>
+                        <a href="{{ url_for('auth.logout') }}" class="ml-4 px-6 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-accent-purple text-white font-semibold hover:shadow-lg hover:shadow-primary-500/50 transition-all duration-200">
+                            <i class="bi bi-box-arrow-right mr-2"></i>Logout
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="px-6 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-dark-hover transition-all duration-200">
+                            Login
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="ml-2 px-6 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-accent-purple text-white font-semibold hover:shadow-lg hover:shadow-primary-500/50 transition-all duration-200">
+                            Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="fixed top-24 right-4 z-50 space-y-2 max-w-md">
+                {% for category, message in messages %}
+                    <div class="glass-card rounded-xl p-4 border-l-4 {% if category == 'warning' %}border-yellow-500{% else %}border-green-500{% endif %} animate-slideIn">
+                        <div class="flex items-center">
+                            <i class="bi {% if category == 'warning' %}bi-exclamation-triangle-fill text-yellow-500{% else %}bi-check-circle-fill text-green-500{% endif %} text-xl mr-3"></i>
+                            <p class="text-gray-200">{{ message }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="min-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- AI Fin-Buddy Chat Widget -->
+    <div id="chat-widget-container">
+        <button id="chat-toggle-btn" class="chat-toggle-btn" onclick="toggleChat()" title="AI Fin-Buddy">
+            <i class="bi bi-chat-dots-fill"></i>
+        </button>
+
+        <div id="chat-window" class="chat-window">
+            <div class="chat-header">
+                <div class="flex justify-between items-center text-white">
+                    <h6 class="text-lg font-bold"><i class="bi bi-robot mr-2"></i>AI Fin-Buddy</h6>
+                    <button onclick="toggleChat()" class="text-white hover:text-gray-200" aria-label="Close">
+                        <i class="bi bi-x-lg text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="chat-messages" class="chat-messages">
+                <div class="bot-message">
+                    <p><i class="bi bi-robot"></i> Namaste! Main hoon AI Fin-Buddy, tera financial advisor! 💰</p>
+                    <ul class="mt-2 space-y-1">
+                        <li>"Mera balance kitna hai?"</li>
+                        <li>"Bitcoin pe invest karun kya?"</li>
+                        <li>"Mera spending kaisa hai?"</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="chat-footer">
+                <div class="flex gap-2">
+                    <input 
+                        type="text" 
+                        id="chat-input" 
+                        class="flex-1 px-4 py-3 rounded-full bg-dark-hover border border-dark-border text-gray-200 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+                        placeholder="Stock, budget, expense poocho..."
+                        onkeypress="if(event.key === 'Enter') sendChatMessage()"
+                    >
+                    <button 
+                        class="px-6 py-3 rounded-full bg-gradient-to-r from-primary-500 to-accent-purple text-white font-semibold hover:shadow-lg hover:shadow-primary-500/50 transition-all"
+                        onclick="sendChatMessage()"
+                        id="send-btn"
+                    >
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.classList.toggle('active');
+            if (chatWindow.classList.contains('active')) {
+                setTimeout(() => document.getElementById('chat-input').focus(), 100);
+            }
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addMessageToChat(message, 'user');
+            input.value = '';
+            
+            const sendBtn = document.getElementById('send-btn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+            
+            fetch('{{ url_for("main.api_chat") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': (document.querySelector('meta[name="csrf-token"]') || {}).content || ''
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    addMessageToChat(data.message, 'bot');
+                } else {
+                    addMessageToChat('Oops! Kuch error aaya. Dobara try karein! 🤖', 'bot');
+                }
+            })
+            .catch(() => addMessageToChat('Connection error. Please try again! 🤖', 'bot'))
+            .finally(() => {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="bi bi-send-fill"></i>';
+            });
+        }
+
+        function addMessageToChat(message, sender) {
+            const chatMessages = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `${sender}-message flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+            messageDiv.innerHTML = `<p>${escapeHtml(message)}</p>`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'info', duration = 5000) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: 'bi-check-circle-fill',
+                error: 'bi-x-circle-fill',
+                warning: 'bi-exclamation-triangle-fill',
+                info: 'bi-info-circle-fill',
+                achievement: 'bi-trophy-fill'
+            };
+            
+            toast.innerHTML = `
+                <i class="bi ${icons[type]} text-2xl"></i>
+                <div class="flex-1">
+                    <div class="font-semibold">${escapeHtml(message)}</div>
+                </div>
+                <button onclick="this.parentElement.remove()" class="hover:opacity-70 transition-opacity">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // Check for flash messages and show as toasts
+        document.addEventListener('DOMContentLoaded', function() {
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        showToast('{{ message|safe }}', '{{ category }}');
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
