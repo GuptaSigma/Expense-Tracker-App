@@ -49,8 +49,9 @@ def create_app():
     app.register_blueprint(main)
     app.register_blueprint(auth)
 
-    # Optional only for local quick-start.
-    if app.config.get('AUTO_CREATE_TABLES', False):
+    # Auto-create schema for SQLite (so a fresh deploy works without migrations)
+    # or when AUTO_CREATE_TABLES is explicitly enabled for other databases.
+    if db_uri.startswith('sqlite') or app.config.get('AUTO_CREATE_TABLES', False):
         with app.app_context():
             db.create_all()
 
