@@ -4,6 +4,7 @@
 
 {% block content %}
 <div class="min-h-screen py-8 px-4">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/achievements.css') }}">
     <!-- Header -->
     <div class="max-w-7xl mx-auto mb-8">
         <div class="text-center mb-8">
@@ -174,43 +175,7 @@
     </div>
 </div>
 
-<script>
-// Show achievement unlock animation when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    const unlockedAchievements = document.querySelectorAll('.achievement-card:not(.opacity-50)');
-    unlockedAchievements.forEach((card, index) => {
-        setTimeout(() => {
-            card.style.animation = 'bounce 0.5s ease-out';
-        }, index * 100);
-    });
-});
-
-// Check for new achievements and show notifications
-{% for achievement in achievements %}
-    {% if achievement.unlocked %}
-        // You can add logic here to show toast only for newly unlocked achievements
-        // For now, we'll skip showing all unlocked achievements on page load
-    {% endif %}
-{% endfor %}
-</script>
-
-<style>
-@keyframes bounce {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-.achievement-card {
-    transition: all 0.3s ease;
-}
-
-.achievement-card:hover {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
-</style>
-
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/achievements.js') }}"></script>
+{% endblock %}
 {% endblock %}

@@ -369,20 +369,8 @@
     </div>
 </div>
 
-<script>
-    // Auto-refresh countdown
-    let seconds = 300; // 5 minutes
-    const countdownEl = document.getElementById('countdown');
-    
-    setInterval(() => {
-        seconds--;
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        countdownEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-        
-        if (seconds <= 0) {
-            location.reload();
-        }
-    }, 1000);
-</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/market_watch.js') }}"></script>
 {% endblock %}
