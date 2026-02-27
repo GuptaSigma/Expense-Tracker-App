@@ -11,15 +11,15 @@
     <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div class="flex items-center space-x-2">
             <i class="bi bi-bank2 text-2xl text-blue-600"></i>
-            <span class="text-xl font-extrabold tracking-tight">Expense<span class="text-blue-600">Tracker</span></span>
+            <span class="text-xl font-extrabold tracking-tight text-slate-900">Expense<span class="text-blue-600">Tracker</span></span>
         </div>
-        <div class="hidden md:flex space-x-8 font-medium text-gray-600">
+        <div class="hidden md:flex space-x-8 font-medium text-slate-800">
             <a href="#features" class="hover:text-blue-600 transition">Features</a>
             <a href="#solutions" class="hover:text-blue-600 transition">Solutions</a>
             <a href="#pricing" class="hover:text-blue-600 transition">Pricing</a>
         </div>
         <div class="flex items-center space-x-4">
-            <a href="{{ url_for('auth.login') }}" class="text-gray-600 font-semibold hover:text-blue-600">Login</a>
+            <a href="{{ url_for('auth.login') }}" class="text-slate-800 font-semibold hover:text-blue-600">Login</a>
             <a href="{{ url_for('auth.register') }}" class="btn-primary text-white px-5 py-2.5 rounded-lg font-bold text-sm">Join Now</a>
         </div>
     </div>
@@ -33,20 +33,20 @@
             <h1 class="text-5xl md:text-6xl font-extrabold mt-6 leading-tight text-slate-900">
                 Take Control of Your <span class="text-blue-600">Financial Future.</span>
             </h1>
-            <p class="text-lg text-slate-600 mt-6 leading-relaxed">
+            <p class="text-lg text-slate-700 mt-6 leading-relaxed font-medium">
                 Personal finance management shouldn't be complicated. Track spending, set budgets, and grow your savings with our intuitive platform designed for everyone.
             </p>
             <div class="mt-10 flex flex-col sm:flex-row gap-4">
                 <a href="{{ url_for('auth.register') }}" class="btn-primary text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg text-center">Start Free Trial</a>
-                <button class="bg-white border-2 border-slate-200 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-50 transition">Watch Demo</button>
+                <button class="bg-white border-2 border-slate-300 text-slate-900 px-8 py-4 rounded-xl font-bold text-lg hover:bg-slate-50 transition">Watch Demo</button>
             </div>
         </div>
         
         <div class="relative">
             <div class="bg-white p-6 rounded-3xl card-shadow border border-slate-100">
                 <div class="flex justify-between items-center mb-8">
-                    <h3 class="font-bold text-slate-800">Monthly Spending</h3>
-                    <span class="text-sm text-slate-400">Last 30 Days</span>
+                    <h3 class="font-bold text-slate-900">Monthly Spending</h3>
+                    <span class="text-sm text-slate-600 font-medium">Last 30 Days</span>
                 </div>
                 <div class="flex items-end justify-between h-48 space-x-2">
                     <div class="bg-blue-100 w-full rounded-t-lg bar-anim" style="height: 60%"></div>
@@ -57,11 +57,11 @@
                 </div>
                 <div class="mt-8 pt-6 border-t border-slate-50 flex justify-between">
                     <div>
-                        <p class="text-sm text-slate-500">Total Balance</p>
+                        <p class="text-sm text-slate-700 font-medium">Total Balance</p>
                         <p class="text-2xl font-black text-slate-900">₹45,250.00</p>
                     </div>
                     <div class="text-right">
-                        <p class="text-sm text-slate-500">Monthly Savings</p>
+                        <p class="text-sm text-slate-700 font-medium">Monthly Savings</p>
                         <p class="text-2xl font-black text-green-600">+12.5%</p>
                     </div>
                 </div>
@@ -73,8 +73,8 @@
 <!-- Features Section -->
 <section id="features" class="bg-white py-24 px-4">
     <div class="max-w-7xl mx-auto text-center mb-20">
-        <h2 class="text-3xl md:text-4xl font-bold">Manage Money Effortlessly</h2>
-        <p class="text-slate-500 mt-4">Everything you need to stop living paycheck to paycheck.</p>
+        <h2 class="text-3xl md:text-4xl font-bold text-slate-900">Manage Money Effortlessly</h2>
+        <p class="text-slate-700 mt-4 font-medium">Everything you need to stop living paycheck to paycheck.</p>
     </div>
     
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -82,24 +82,24 @@
             <div class="w-12 h-12 bg-blue-50 flex items-center justify-center rounded-xl text-blue-600 mb-6">
                 <i class="bi bi-receipt text-2xl"></i>
             </div>
-            <h4 class="text-xl font-bold mb-3">Automatic Categorization</h4>
-            <p class="text-slate-500">Import your bank statements and let us sort your expenses into neat categories.</p>
+            <h4 class="text-xl font-bold text-slate-900 mb-3">Automatic Categorization</h4>
+            <p class="text-slate-700">Import your bank statements and let us sort your expenses into neat categories.</p>
         </div>
 
         <div class="p-8 rounded-2xl border border-slate-100 hover:border-blue-200 transition">
             <div class="w-12 h-12 bg-green-50 flex items-center justify-center rounded-xl text-green-600 mb-6">
                 <i class="bi bi-piggy-bank text-2xl"></i>
             </div>
-            <h4 class="text-xl font-bold mb-3">Smart Budgeting</h4>
-            <p class="text-slate-500">Set monthly limits for dining, shopping, and bills to stay on track with your goals.</p>
+            <h4 class="text-xl font-bold text-slate-900 mb-3">Smart Budgeting</h4>
+            <p class="text-slate-700">Set monthly limits for dining, shopping, and bills to stay on track with your goals.</p>
         </div>
 
         <div class="p-8 rounded-2xl border border-slate-100 hover:border-blue-200 transition">
             <div class="w-12 h-12 bg-purple-50 flex items-center justify-center rounded-xl text-purple-600 mb-6">
                 <i class="bi bi-shield-lock text-2xl"></i>
             </div>
-            <h4 class="text-xl font-bold mb-3">Bank-Grade Security</h4>
-            <p class="text-slate-500">Your data is yours. We use 256-bit encryption to keep your financial info private.</p>
+            <h4 class="text-xl font-bold text-slate-900 mb-3">Bank-Grade Security</h4>
+            <p class="text-slate-700">Your data is yours. We use 256-bit encryption to keep your financial info private.</p>
         </div>
     </div>
 </section>
