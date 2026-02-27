@@ -187,14 +187,16 @@
     <!-- Charts and Recent Expenses -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <!-- Expense Breakdown Chart -->
-        <div class="glass-card rounded-2xl p-6">
+        <div class="glass-card rounded-2xl p-6 border border-slate-200 bg-white/90">
             <h5 class="text-xl font-bold text-slate-900 mb-4">
                 <i class="bi bi-pie-chart mr-2 text-primary-500"></i>Expense Breakdown
             </h5>
             {% if category_labels %}
-                <canvas id="categoryChart" 
-                        data-labels='{{ category_labels|tojson|safe }}' 
-                        data-values='{{ category_data|tojson|safe }}'></canvas>
+                <div class="relative h-[360px]">
+                    <canvas id="categoryChart" 
+                            data-labels='{{ category_labels|tojson|safe }}' 
+                            data-values='{{ category_data|tojson|safe }}'></canvas>
+                </div>
             {% else %}
                 <p class="text-slate-700 text-center py-12">No expense data yet</p>
             {% endif %}
@@ -430,6 +432,27 @@
         const categoryLabels = JSON.parse(chartCanvas.dataset.labels);
         const categoryData = JSON.parse(chartCanvas.dataset.values);
         
+        const totalCategoryExpense = categoryData.reduce((a, b) => a + b, 0);
+        const centerTextPlugin = {
+            id: 'centerText',
+            afterDraw(chart) {
+                const meta = chart.getDatasetMeta(0);
+                if (!meta || !meta.data || !meta.data.length) return;
+                const centerX = meta.data[0].x;
+                const centerY = meta.data[0].y;
+                const { ctx } = chart;
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#64748b';
+                ctx.font = '600 12px Plus Jakarta Sans';
+                ctx.fillText('Total Spend', centerX, centerY - 10);
+                ctx.fillStyle = '#0f172a';
+                ctx.font = '800 18px Plus Jakarta Sans';
+                ctx.fillText(`₹${totalCategoryExpense.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, centerX, centerY + 14);
+                ctx.restore();
+            }
+        };
+
         const categoryChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -445,30 +468,38 @@
                         '#f59e0b',
                         '#ef4444'
                     ],
-                    borderColor: '#1a1a1a',
-                    borderWidth: 3,
-                    hoverOffset: 10
+                    borderColor: '#ffffff',
+                    borderWidth: 4,
+                    hoverOffset: 14,
+                    borderRadius: 8
                 }]
             },
+            plugins: [centerTextPlugin],
             options: {
                 responsive: true,
-                maintainAspectRatio: true,
+                maintainAspectRatio: false,
+                cutout: '62%',
                 plugins: {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: '#e5e7eb',
-                            padding: 15,
+                            color: '#334155',
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            boxWidth: 12,
+                            boxHeight: 12,
+                            padding: 18,
                             font: {
-                                size: 12
+                                size: 12,
+                                weight: '600'
                             }
                         }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#fff',
-                        bodyColor: '#e5e7eb',
-                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleColor: '#f8fafc',
+                        bodyColor: '#e2e8f0',
+                        borderColor: '#60a5fa',
                         borderWidth: 1,
                         padding: 12,
                         displayColors: true,
@@ -485,7 +516,9 @@
                 },
                 animation: {
                     animateScale: true,
-                    animateRotate: true
+                    animateRotate: true,
+                    duration: 1400,
+                    easing: 'easeOutCubic'
                 }
             }
         });
