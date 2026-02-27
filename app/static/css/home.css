@@ -1,0 +1,39 @@
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #f8fafc; /* Light Professional Gray */
+    color: #1e293b;
+}
+
+.nav-blur {
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.card-shadow {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.stat-card {
+    border-left: 4px solid #2563eb;
+}
+
+/* Chart Placeholder Animation */
+@keyframes grow {
+    from { height: 0; }
+    to { height: 100%; }
+}
+
+.bar-anim {
+    animation: grow 1.5s ease-out forwards;
+}
