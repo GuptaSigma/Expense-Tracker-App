@@ -4,13 +4,7 @@
         align-items: center;
         justify-content: center;
         padding: 2rem;
-        background: linear-gradient(135deg, #0a0a0a 0%, #1e1b4b 50%, #0a0a0a 100%);
-    }
-
-    .expense-card {
-        background: rgba(26, 26, 26, 0.9);
-        backdrop-filter: blur(40px);
-        border: 1px solid rgba(236, 72, 153, 0.4);
+        background-color: #f8fafc;
         border-radius: 28px;
         padding: 3.5rem;
         width: 100%;

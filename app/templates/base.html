@@ -27,35 +27,35 @@
             
             <div class="hidden md:flex items-center space-x-1">
                 {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('main.dashboard') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                    <a href="{{ url_for('main.dashboard') }}" class="px-4 py-2 rounded-lg text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
                         <i class="bi bi-speedometer2 mr-2"></i>Dashboard
                     </a>
-                    <a href="{{ url_for('main.calculators') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                    <a href="{{ url_for('main.calculators') }}" class="px-4 py-2 rounded-lg text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
                         <i class="bi bi-calculator mr-2"></i>Calculators
                     </a>
-                    <a href="{{ url_for('main.market_watch') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                    <a href="{{ url_for('main.market_watch') }}" class="px-4 py-2 rounded-lg text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
                         <i class="bi bi-graph-up mr-2"></i>Market
                     </a>
-                    <a href="{{ url_for('main.investment_coach') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                    <a href="{{ url_for('main.investment_coach') }}" class="px-4 py-2 rounded-lg text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
                         <i class="bi bi-robot mr-2"></i>AI Coach
                     </a>
-                    <a href="{{ url_for('main.stock_search') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                    <a href="{{ url_for('main.stock_search') }}" class="px-4 py-2 rounded-lg text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
                         <i class="bi bi-search mr-2"></i>Search
                     </a>
-                    <a href="{{ url_for('main.watchlist') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                    <a href="{{ url_for('main.watchlist') }}" class="px-4 py-2 rounded-lg text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
                         <i class="bi bi-star-fill mr-2"></i>Watchlist
                     </a>
-                    <a href="{{ url_for('main.achievements') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                    <a href="{{ url_for('main.achievements') }}" class="px-4 py-2 rounded-lg text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
                         <i class="bi bi-trophy-fill mr-2"></i>Achievements
                     </a>
-                    <a href="{{ url_for('auth.logout') }}" class="ml-4 px-6 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all duration-200">
+                    <a href="{{ url_for('auth.logout') }}" class="ml-4 px-6 py-2 rounded-lg bg-blue-600 text-slate-900 font-bold hover:bg-blue-700 transition-all duration-200">
                         <i class="bi bi-box-arrow-right mr-2"></i>Logout
                     </a>
                 {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="px-6 py-2 rounded-lg text-gray-600 font-semibold hover:text-blue-600">
+                    <a href="{{ url_for('auth.login') }}" class="px-6 py-2 rounded-lg text-slate-700 font-semibold hover:text-blue-600">
                         Login
                     </a>
-                    <a href="{{ url_for('auth.register') }}" class="ml-2 px-6 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition-all duration-200">
+                    <a href="{{ url_for('auth.register') }}" class="ml-2 px-6 py-2 rounded-lg bg-blue-600 text-slate-900 font-bold hover:bg-blue-700 transition-all duration-200">
                         Register
                     </a>
                 {% endif %}
@@ -86,15 +86,15 @@
 
     <!-- AI Fin-Buddy Chat Widget -->
     <div id="chat-widget-container">
-        <button id="chat-toggle-btn" class="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all z-40" onclick="toggleChat()" title="AI Fin-Buddy">
+        <button id="chat-toggle-btn" class="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-blue-600 text-slate-900 shadow-lg hover:bg-blue-700 transition-all z-40" onclick="toggleChat()" title="AI Fin-Buddy">
             <i class="bi bi-chat-dots-fill"></i>
         </button>
 
         <div id="chat-window" class="fixed bottom-24 right-6 w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col" style="height: 500px; display: none;">
-            <div class="bg-blue-600 text-white p-4 rounded-t-2xl">
+            <div class="bg-blue-600 text-slate-900 p-4 rounded-t-2xl">
                 <div class="flex justify-between items-center">
                     <h6 class="text-lg font-bold"><i class="bi bi-robot mr-2"></i>AI Fin-Buddy</h6>
-                    <button onclick="toggleChat()" class="text-white hover:text-gray-200" aria-label="Close">
+                    <button onclick="toggleChat()" class="text-slate-900 hover:text-slate-700" aria-label="Close">
                         <i class="bi bi-x-lg text-xl"></i>
                     </button>
                 </div>
@@ -123,7 +123,7 @@
                         onkeypress="if(event.key === 'Enter') sendChatMessage()"
                     >
                     <button 
-                        class="px-5 py-2.5 rounded-full bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all"
+                        class="px-5 py-2.5 rounded-full bg-blue-600 text-slate-900 font-semibold hover:bg-blue-700 transition-all"
                         onclick="sendChatMessage()"
                         id="send-btn"
                     >
