@@ -142,6 +142,55 @@ flask db upgrade
 
 Alternatively, set `AUTO_CREATE_TABLES=1` to have the app create tables automatically on startup (useful for a quick first deploy; `flask db upgrade` is preferred in production).
 
+### Step 3c: Deploy on Render (with Neon PostgreSQL)
+
+Follow these steps for a **zero-manual-SQL** deployment on [Render](https://render.com) backed by a [Neon](https://neon.tech) Postgres database.
+
+#### 1. Create a Neon database
+
+1. Sign up at [neon.tech](https://neon.tech) and create a new project.
+2. Copy the connection string from the Neon dashboard (use the **pooled** connection string for Render):
+   ```
+   postgresql://user:password@ep-xxx.region.aws.neon.tech/dbname?sslmode=require
+   ```
+
+#### 2. Configure Render environment variables
+
+In your Render service → **Environment**, add:
+
+| Variable | Value | Notes |
+|---|---|---|
+| `DATABASE_URL` | `postgresql://...` | Your Neon connection string |
+| `SECRET_KEY` | *(random string)* | Generate with `python -c "import secrets; print(secrets.token_hex(32))"` |
+| `RUN_MIGRATIONS` | `1` | Runs `flask db upgrade` on every deploy (recommended) |
+| `AUTO_CREATE_TABLES` | `0` | Alternative to migrations: creates tables via `db.create_all()` if set to `1` |
+| `SESSION_COOKIE_SECURE` | `1` | Required for HTTPS on Render |
+
+> **First deploy:** Set `RUN_MIGRATIONS=1`. The startup script will run `flask db upgrade`, which creates all tables and stamps the database. `AUTO_CREATE_TABLES` is an alternative (uses `db.create_all()` instead of migrations) — pick one approach.
+
+#### 3. Set the Start Command
+
+In Render → **Settings → Start Command**, enter:
+
+```
+bash scripts/render_start.sh
+```
+
+This is also the default in `Procfile`, so Render picks it up automatically for web services.
+
+#### 4. Trigger a deploy
+
+Push to your connected branch or click **Manual Deploy** in Render. The startup script will:
+1. Validate `DATABASE_URL` is present (exits with error if missing).
+2. Run `flask db upgrade` (if `RUN_MIGRATIONS=1`).
+3. Start **gunicorn**.
+
+#### 5. Verify
+
+Visit `https://<your-app>.onrender.com/register`. You should see the registration page with no database errors.
+
+---
+
 ### Step 4: Run the App
 
 **Important:** Always activate the virtual environment before running!

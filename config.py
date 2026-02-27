@@ -39,6 +39,7 @@ class Config:
 
     DEBUG = _as_bool('FLASK_DEBUG', False)
     AUTO_CREATE_TABLES = _as_bool('AUTO_CREATE_TABLES', False)
+    RUN_MIGRATIONS = _as_bool('RUN_MIGRATIONS', False)
 
     # Cookie and CSRF security
     SESSION_COOKIE_HTTPONLY = True
