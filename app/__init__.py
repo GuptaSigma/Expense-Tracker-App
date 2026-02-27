@@ -19,19 +19,6 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Ensure SQLite file uses an absolute, writable path in deploy environments.
-    db_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
-    if isinstance(db_uri, str) and db_uri.startswith('sqlite:///'):
-        sqlite_path = db_uri.replace('sqlite:///', '', 1)
-        if sqlite_path and sqlite_path != ':memory:':
-            is_absolute = os.path.isabs(sqlite_path) or (len(sqlite_path) > 1 and sqlite_path[1] == ':')
-            if not is_absolute:
-                sqlite_path = os.path.join(app.instance_path, sqlite_path)
-                app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{sqlite_path}"
-            sqlite_dir = os.path.dirname(sqlite_path)
-            if sqlite_dir:
-                os.makedirs(sqlite_dir, exist_ok=True)
-
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
@@ -49,9 +36,9 @@ def create_app():
     app.register_blueprint(main)
     app.register_blueprint(auth)
 
-    # Auto-create schema for SQLite (so a fresh deploy works without migrations)
-    # or when AUTO_CREATE_TABLES is explicitly enabled for other databases.
-    if db_uri.startswith('sqlite') or app.config.get('AUTO_CREATE_TABLES', False):
+    # Create tables on startup only when explicitly requested via AUTO_CREATE_TABLES.
+    # On Render/production, prefer running `flask db upgrade` instead.
+    if app.config.get('AUTO_CREATE_TABLES', False):
         with app.app_context():
             db.create_all()
 

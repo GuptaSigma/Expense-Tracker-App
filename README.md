@@ -57,7 +57,7 @@ Ye project sirf kharche track nahi karta, balki aapki financial health ko **AI**
 | Component | Technology |
 |-----------|-----------|
 | **Backend** | Flask 3.0.0 |
-| **Database** | SQLAlchemy (SQLite for dev, PostgreSQL ready) |
+| **Database** | SQLAlchemy + PostgreSQL (Neon / any Postgres host) |
 | **Frontend** | HTML5, CSS3 (Glassmorphism), JavaScript, Chart.js |
 | **Deep Learning** | TensorFlow 2.14.0 (LSTM Neural Networks) |
 | **Statistical Forecasting** | Statsmodels 0.14.0 (ARIMA models) |
@@ -123,16 +123,24 @@ SECRET_KEY=your-secret-key-here
 - **OpenRouter API**: [OpenRouter.ai](https://openrouter.ai/keys)
 - **Gold API**: [GoldAPI.io](https://www.goldapi.io/)
 
-### Step 3b: Database (SQLite – no extra setup needed)
+### Step 3b: Database Setup (PostgreSQL required)
 
-By default the app uses **SQLite** (`expense_tracker.db`) so you do **not** need MySQL or PostgreSQL.  
-Tables are created automatically the first time the app starts, so `/register` works on a fresh deploy with no manual migration step.
+The app requires **PostgreSQL**. Set the `DATABASE_URL` environment variable to your Postgres connection string (e.g., a [Neon](https://neon.tech) database):
 
-If you want a different database, set `DATABASE_URL` in your `.env`:
 ```env
-# PostgreSQL example
-DATABASE_URL=postgresql://user:password@host/dbname
+# Replace <password> with your actual password
+DATABASE_URL=postgresql://user:<password>@host/dbname?sslmode=require
 ```
+
+**On Render:** Add `DATABASE_URL` as an environment variable in the Render dashboard. Do **not** commit credentials to the repository.
+
+**Schema initialisation:** The repo uses Flask-Migrate. Run migrations on first deploy (or after schema changes):
+
+```bash
+flask db upgrade
+```
+
+Alternatively, set `AUTO_CREATE_TABLES=1` to have the app create tables automatically on startup (useful for a quick first deploy; `flask db upgrade` is preferred in production).
 
 ### Step 4: Run the App
 
@@ -264,7 +272,7 @@ Mitigation: Auto-generated action items
 - ✅ All API keys stored in `.env` file ONLY
 - ✅ Never expose keys in README, code, or commits
 - ✅ Use `.env.example` as template for setup
-- Database uses SQLite (configurable to PostgreSQL)
+- Database uses PostgreSQL (configured via `DATABASE_URL`)
 - Flask debug mode for development only
 - CSRF protection via Flask-Login
 - Environment-based configuration for production
