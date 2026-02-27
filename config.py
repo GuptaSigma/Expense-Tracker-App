@@ -15,26 +15,27 @@ def _as_bool(name, default=False):
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-change-me')
 
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URL',
-        'sqlite:///expense_tracker.db'
-    )
-    if SQLALCHEMY_DATABASE_URI.startswith('mysql://'):
-        SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace('mysql://', 'mysql+pymysql://', 1)
+    _db_url = os.getenv('DATABASE_URL')
+    if not _db_url:
+        raise RuntimeError(
+            "DATABASE_URL environment variable is not set. "
+            "Set it to a PostgreSQL connection string, e.g. "
+            "postgresql://user:password@host/dbname"
+        )
+    # Normalize driver prefixes so SQLAlchemy picks the right dialect.
+    if _db_url.startswith('postgresql://'):
+        _db_url = _db_url.replace('postgresql://', 'postgresql+psycopg2://', 1)
+    elif _db_url.startswith('postgres://'):
+        _db_url = _db_url.replace('postgres://', 'postgresql+psycopg2://', 1)
+    elif _db_url.startswith('mysql://'):
+        _db_url = _db_url.replace('mysql://', 'mysql+pymysql://', 1)
+    SQLALCHEMY_DATABASE_URI = _db_url
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    # Use SQLite-safe engine options when connecting to SQLite.
-    # check_same_thread=False is safe here because SQLAlchemy's connection
-    # pool ensures each thread gets its own connection.
-    if SQLALCHEMY_DATABASE_URI.startswith('sqlite'):
-        SQLALCHEMY_ENGINE_OPTIONS = {
-            'connect_args': {'check_same_thread': False},
-        }
-    else:
-        SQLALCHEMY_ENGINE_OPTIONS = {
-            'pool_pre_ping': True,
-            'pool_recycle': 280,
-        }
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 280,
+    }
 
     DEBUG = _as_bool('FLASK_DEBUG', False)
     AUTO_CREATE_TABLES = _as_bool('AUTO_CREATE_TABLES', False)
