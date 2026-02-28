@@ -15,7 +15,7 @@ def _as_int(name, default):
         return default
 
 
-
+def _as_bool(name, default):
     value = os.getenv(name)
     if value is None:
         return default
