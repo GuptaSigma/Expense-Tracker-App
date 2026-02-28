@@ -5,7 +5,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def _as_bool(name, default=False):
+def _as_int(name, default):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    try:
+        return int(value.strip())
+    except ValueError:
+        return default
+
+
+
     value = os.getenv(name)
     if value is None:
         return default
@@ -78,10 +88,15 @@ class Config:
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', 'noreply@expensetracker.com')
-    
+    MAIL_TIMEOUT = _as_int('MAIL_TIMEOUT', 10)
+
     # OTP Settings
     OTP_LENGTH = 6
     OTP_EXPIRY_MINUTES = 10
+    # Set DISABLE_EMAIL_OTP=true to skip OTP entirely (auto-verify on register).
+    # Set OTP_DEV_MODE=true to log the OTP to the console instead of emailing it.
+    DISABLE_EMAIL_OTP = _as_bool('DISABLE_EMAIL_OTP', False)
+    OTP_DEV_MODE = _as_bool('OTP_DEV_MODE', False)
 
     # Market Data Settings
     MARKET_UPDATE_INTERVAL = 30  # seconds

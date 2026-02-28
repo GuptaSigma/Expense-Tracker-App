@@ -50,6 +50,19 @@ def register():
         elif email_exists:
             flash('Email already registered', 'warning')
         else:
+            # When OTP is disabled, create user as already-verified with no OTP.
+            if Config.DISABLE_EMAIL_OTP:
+                new_user = User(
+                    username=username,
+                    email=email,
+                    password=generate_password_hash(password),
+                    is_email_verified=True,
+                )
+                db.session.add(new_user)
+                db.session.commit()
+                flash('Registration successful! Please login.', 'success')
+                return redirect(url_for('auth.login'))
+
             # Generate OTP
             otp = generate_otp()
             
