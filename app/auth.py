@@ -50,8 +50,8 @@ def register():
         elif email_exists:
             flash('Email already registered', 'warning')
         else:
-            # When OTP is disabled, create user as already-verified with no OTP.
-            if Config.DISABLE_EMAIL_OTP:
+            # When OTP is disabled and not in dev mode, create user as already-verified with no OTP.
+            if Config.DISABLE_EMAIL_OTP and not Config.OTP_DEV_MODE:
                 new_user = User(
                     username=username,
                     email=email,

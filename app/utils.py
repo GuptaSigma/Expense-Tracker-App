@@ -13,13 +13,15 @@ def send_otp_email(email, otp, username):
 
     Returns True when the OTP has been delivered (or simulated) successfully.
     Behaviour is controlled by three env vars:
-      DISABLE_EMAIL_OTP – skip OTP entirely; caller should auto-verify the user.
+      DISABLE_EMAIL_OTP – skip SMTP and return False; auth.py then decides
+                          whether to auto-verify (no OTP_DEV_MODE) or show the
+                          dev OTP banner (OTP_DEV_MODE=true).
       OTP_DEV_MODE      – log the OTP to the console instead of sending email.
       MAIL_TIMEOUT      – seconds to wait for the SMTP connection (default 10).
     """
     if Config.DISABLE_EMAIL_OTP:
         print(f"[DISABLE_EMAIL_OTP] Skipping OTP email for {email}")
-        return True
+        return False
 
     if Config.OTP_DEV_MODE:
         print(f"[OTP_DEV_MODE] OTP for {email} ({username}): {otp}")

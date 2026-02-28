@@ -185,7 +185,26 @@ Push to your connected branch or click **Manual Deploy** in Render. The startup 
 2. Run `flask db upgrade` (if `RUN_MIGRATIONS=1`).
 3. Start **gunicorn**.
 
-#### 5. Verify
+#### 5. OTP / Email settings on Render
+
+Render's outbound SMTP connections to `smtp.gmail.com:587` can hang and cause Gunicorn worker timeouts on `/register`. Use the following env vars to prevent this:
+
+| Variable | Recommended value | Description |
+|---|---|---|
+| `DISABLE_EMAIL_OTP` | `true` | Skip SMTP entirely. Combined with `OTP_DEV_MODE=true` the OTP is shown on the verify page (dev banner). |
+| `OTP_DEV_MODE` | `true` | When email sending is skipped/fails, display the OTP in a prominent banner on `/verify-otp` instead of emailing it. |
+| `MAIL_TIMEOUT` | `5` | Seconds to wait for the SMTP connection before giving up (prevents long hangs). |
+
+**How it works:**
+
+- `DISABLE_EMAIL_OTP=true` + `OTP_DEV_MODE=true` (recommended for Render without SMTP):  Registration generates an OTP, skips SMTP, and redirects to `/verify-otp` where a yellow **🔧 Development Mode** banner displays the OTP. Enter it to complete verification.
+- `DISABLE_EMAIL_OTP=true` + `OTP_DEV_MODE=false`: Users are auto-verified on registration (no OTP step at all) and redirected to login.
+- `DISABLE_EMAIL_OTP=false` + `OTP_DEV_MODE=true`: SMTP is attempted; if it fails the OTP banner is shown. If SMTP succeeds the OTP is only logged to the console (not displayed in the browser).
+- `DISABLE_EMAIL_OTP=false` + `OTP_DEV_MODE=false` (default): Full SMTP email flow; set `MAIL_TIMEOUT` to limit hang time.
+
+> ⚠️ `OTP_DEV_MODE` exposes the OTP in the browser. Use only in non-production / trusted environments.
+
+#### 6. Verify
 
 Visit `https://<your-app>.onrender.com/register`. You should see the registration page with no database errors.
 
