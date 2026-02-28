@@ -82,9 +82,16 @@ def register():
                 flash('Registration successful! OTP sent to your email.', 'success')
                 return redirect(url_for('auth.verify_otp'))
             else:
-                # If email fails, still allow login but warn
-                flash('Registration successful but OTP email failed. Contact support.', 'warning')
-                return redirect(url_for('auth.login'))
+                # If email fails and OTP_DEV_MODE is enabled, allow dev verification
+                if Config.OTP_DEV_MODE:
+                    session['pending_verification_email'] = email
+                    session['dev_otp'] = otp
+                    flash('Registration successful! Email failed - DEV MODE: Check console for OTP.', 'warning')
+                    return redirect(url_for('auth.verify_otp'))
+                else:
+                    # If email fails in production, warn and redirect to login
+                    flash('Registration successful but OTP email failed. Contact support.', 'warning')
+                    return redirect(url_for('auth.login'))
 
     return render_template('register.html')
 
@@ -135,14 +142,15 @@ def verify_otp():
             
             # Clear session
             session.pop('pending_verification_email', None)
+            session.pop('dev_otp', None)
             
             flash('Email verified successfully! Please login.', 'success')
             return redirect(url_for('auth.login'))
         else:
             flash('Invalid OTP. Please try again.', 'warning')
-            return render_template('verify_otp.html', pending_email=pending_email)
+            return render_template('verify_otp.html', pending_email=pending_email, dev_otp=session.get('dev_otp'))
     
-    return render_template('verify_otp.html', pending_email=pending_email)
+    return render_template('verify_otp.html', pending_email=pending_email, dev_otp=session.get('dev_otp'))
 
 
 @auth.route('/resend-otp', methods=['POST'])
@@ -172,9 +180,13 @@ def resend_otp():
     if send_otp_email(email, otp, user.username):
         flash('OTP sent to your email!', 'success')
     else:
-        flash('Failed to send OTP. Please try again.', 'danger')
+        if Config.OTP_DEV_MODE:
+            session['dev_otp'] = otp
+            flash('Email failed - DEV MODE: Check console for OTP.', 'warning')
+        else:
+            flash('Failed to send OTP. Please try again.', 'danger')
     
-    return render_template('verify_otp.html', pending_email=email)
+    return render_template('verify_otp.html', pending_email=email, dev_otp=session.get('dev_otp'))
 
 
 # Google OAuth Routes
