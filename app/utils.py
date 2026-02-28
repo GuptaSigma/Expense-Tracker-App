@@ -8,21 +8,8 @@ from config import Config
 def send_otp_email(email, otp, username):
     """Send OTP verification email via Resend API.
 
-    Returns True when the OTP has been delivered (or simulated) successfully.
-    Behaviour is controlled by two env vars:
-      DISABLE_EMAIL_OTP – skip sending and return False; auth.py then decides
-                          whether to auto-verify (no OTP_DEV_MODE) or show the
-                          dev OTP banner (OTP_DEV_MODE=true).
-      OTP_DEV_MODE      – log the OTP to the console instead of sending email.
+    Returns True when the OTP has been delivered successfully.
     """
-    if Config.DISABLE_EMAIL_OTP:
-        print(f"[DISABLE_EMAIL_OTP] Skipping OTP email for {email}")
-        return False
-
-    if Config.OTP_DEV_MODE:
-        print(f"[OTP_DEV_MODE] OTP for {email} ({username}): {otp}")
-        return True
-
     if not Config.RESEND_API_KEY:
         print(f"Resend API key not configured. OTP for {email}: {otp}")
         return False
