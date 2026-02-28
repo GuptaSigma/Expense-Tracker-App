@@ -83,7 +83,7 @@ def register():
                 return redirect(url_for('auth.verify_otp'))
             else:
                 # If email fails and OTP_DEV_MODE is enabled, allow dev verification
-                if Config.OTP_DEV_MODE:
+                if Config.OTP_DEV_MODE and Config.DEBUG:
                     session['pending_verification_email'] = email
                     session['dev_otp'] = otp
                     flash('DEV MODE: Email disabled. OTP is shown on the verification page.', 'info')
@@ -148,9 +148,9 @@ def verify_otp():
             return redirect(url_for('auth.login'))
         else:
             flash('Invalid OTP. Please try again.', 'warning')
-            return render_template('verify_otp.html', pending_email=pending_email, dev_otp=session.get('dev_otp'))
+            return render_template('verify_otp.html', pending_email=pending_email, dev_otp=session.get('dev_otp') if Config.DEBUG else None)
     
-    return render_template('verify_otp.html', pending_email=pending_email, dev_otp=session.get('dev_otp'))
+    return render_template('verify_otp.html', pending_email=pending_email, dev_otp=session.get('dev_otp') if Config.DEBUG else None)
 
 
 @auth.route('/resend-otp', methods=['POST'])
@@ -180,13 +180,13 @@ def resend_otp():
     if send_otp_email(email, otp, user.username):
         flash('OTP sent to your email!', 'success')
     else:
-        if Config.OTP_DEV_MODE:
+        if Config.OTP_DEV_MODE and Config.DEBUG:
             session['dev_otp'] = otp
             flash('DEV MODE: Email disabled. OTP is shown on the verification page.', 'info')
         else:
             flash('Failed to send OTP. Please try again.', 'danger')
     
-    return render_template('verify_otp.html', pending_email=email, dev_otp=session.get('dev_otp'))
+    return render_template('verify_otp.html', pending_email=email, dev_otp=session.get('dev_otp') if Config.DEBUG else None)
 
 
 # Google OAuth Routes
