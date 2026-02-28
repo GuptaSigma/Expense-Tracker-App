@@ -89,6 +89,7 @@ class Config:
     # OTP Settings
     OTP_LENGTH = 6
     OTP_EXPIRY_MINUTES = 10
+    OTP_DEV_MODE = _as_bool('OTP_DEV_MODE', False)
 
     # Market Data Settings
     MARKET_UPDATE_INTERVAL = 30  # seconds
