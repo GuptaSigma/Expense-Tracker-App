@@ -81,14 +81,10 @@ class Config:
     GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
     GOOGLE_REDIRECT_URI = 'http://localhost:5000/auth/google/callback'
 
-    # Email Configuration (for OTP verification)
-    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
-    MAIL_USE_TLS = _as_bool('MAIL_USE_TLS', True)
-    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
-    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', 'noreply@expensetracker.com')
-    MAIL_TIMEOUT = _as_int('MAIL_TIMEOUT', 10)
+    # Resend API Configuration (for OTP email delivery)
+    RESEND_API_KEY = os.getenv('RESEND_API_KEY')
+    RESEND_FROM_EMAIL = os.getenv('RESEND_FROM_EMAIL', 'onboarding@resend.dev')
+    RESEND_TIMEOUT = _as_int('RESEND_TIMEOUT', 15)
 
     # OTP Settings
     OTP_LENGTH = 6
