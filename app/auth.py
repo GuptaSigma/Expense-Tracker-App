@@ -23,6 +23,10 @@ def login():
         user = User.query.filter_by(username=username).first()
 
         if user and check_password_hash(user.password, password):
+            if not user.is_email_verified:
+                session['pending_verification_email'] = user.email
+                flash('Login blocked: Verify OTP from email before login.', 'warning')
+                return redirect(url_for('auth.verify_otp'))
             login_user(user)
             return redirect(url_for('main.dashboard'))
         flash('Invalid username or password', 'warning')
@@ -50,19 +54,6 @@ def register():
         elif email_exists:
             flash('Email already registered', 'warning')
         else:
-            # When OTP is disabled and not in dev mode, create user as already-verified with no OTP.
-            if Config.DISABLE_EMAIL_OTP and not Config.OTP_DEV_MODE:
-                new_user = User(
-                    username=username,
-                    email=email,
-                    password=generate_password_hash(password),
-                    is_email_verified=True,
-                )
-                db.session.add(new_user)
-                db.session.commit()
-                flash('Registration successful! Please login.', 'success')
-                return redirect(url_for('auth.login'))
-
             # Generate OTP
             otp = generate_otp()
             
@@ -82,16 +73,8 @@ def register():
                 flash('Registration successful! OTP sent to your email.', 'success')
                 return redirect(url_for('auth.verify_otp'))
             else:
-                # If email fails and OTP_DEV_MODE is enabled, allow dev verification
-                if Config.OTP_DEV_MODE and Config.DEBUG:
-                    session['pending_verification_email'] = email
-                    session['dev_otp'] = otp
-                    flash('DEV MODE: Email disabled. OTP is shown on the verification page.', 'info')
-                    return redirect(url_for('auth.verify_otp'))
-                else:
-                    # If email fails in production, warn and redirect to login
-                    flash('Registration successful but OTP email failed. Contact support.', 'warning')
-                    return redirect(url_for('auth.login'))
+                flash('Registration successful but OTP email failed. Contact support.', 'warning')
+                return redirect(url_for('auth.login'))
 
     return render_template('register.html')
 
@@ -142,15 +125,14 @@ def verify_otp():
             
             # Clear session
             session.pop('pending_verification_email', None)
-            session.pop('dev_otp', None)
             
             flash('Email verified successfully! Please login.', 'success')
             return redirect(url_for('auth.login'))
         else:
             flash('Invalid OTP. Please try again.', 'warning')
-            return render_template('verify_otp.html', pending_email=pending_email, dev_otp=session.get('dev_otp') if Config.DEBUG else None)
+            return render_template('verify_otp.html', pending_email=pending_email)
     
-    return render_template('verify_otp.html', pending_email=pending_email, dev_otp=session.get('dev_otp') if Config.DEBUG else None)
+    return render_template('verify_otp.html', pending_email=pending_email)
 
 
 @auth.route('/resend-otp', methods=['POST'])
@@ -180,13 +162,9 @@ def resend_otp():
     if send_otp_email(email, otp, user.username):
         flash('OTP sent to your email!', 'success')
     else:
-        if Config.OTP_DEV_MODE and Config.DEBUG:
-            session['dev_otp'] = otp
-            flash('DEV MODE: Email disabled. OTP is shown on the verification page.', 'info')
-        else:
-            flash('Failed to send OTP. Please try again.', 'danger')
+        flash('Failed to send OTP. Please try again.', 'danger')
     
-    return render_template('verify_otp.html', pending_email=email, dev_otp=session.get('dev_otp') if Config.DEBUG else None)
+    return render_template('verify_otp.html', pending_email=email)
 
 
 # Google OAuth Routes
@@ -244,12 +222,15 @@ def google_callback():
             if user:
                 # Link Google account to existing user
                 user.google_id = google_id
+                if not user.is_email_verified:
+                    user.is_email_verified = True
             else:
                 # Create new user
                 user = User(
                     username=name,
                     email=email,
                     google_id=google_id,
+                    is_email_verified=True,
                     password=generate_password_hash('google-oauth')  # Placeholder password
                 )
             

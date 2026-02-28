@@ -89,10 +89,6 @@ class Config:
     # OTP Settings
     OTP_LENGTH = 6
     OTP_EXPIRY_MINUTES = 10
-    # Set DISABLE_EMAIL_OTP=true to skip OTP entirely (auto-verify on register).
-    # Set OTP_DEV_MODE=true to log the OTP to the console instead of emailing it.
-    DISABLE_EMAIL_OTP = _as_bool('DISABLE_EMAIL_OTP', False)
-    OTP_DEV_MODE = _as_bool('OTP_DEV_MODE', False)
 
     # Market Data Settings
     MARKET_UPDATE_INTERVAL = 30  # seconds

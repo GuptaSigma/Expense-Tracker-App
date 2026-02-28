@@ -187,22 +187,19 @@ Push to your connected branch or click **Manual Deploy** in Render. The startup 
 
 #### 5. OTP / Email settings on Render
 
-Render's outbound SMTP connections to `smtp.gmail.com:587` can hang and cause Gunicorn worker timeouts on `/register`. Use the following env vars to prevent this:
+OTP email verification is mandatory for all normal (email/password) registrations. Configure your Resend API key to enable email delivery:
 
-| Variable | Recommended value | Description |
-|---|---|---|
-| `DISABLE_EMAIL_OTP` | `true` | Skip SMTP entirely. Combined with `OTP_DEV_MODE=true` the OTP is shown on the verify page (dev banner). |
-| `OTP_DEV_MODE` | `true` | When email sending is skipped/fails, display the OTP in a prominent banner on `/verify-otp` instead of emailing it. |
-| `MAIL_TIMEOUT` | `5` | Seconds to wait for the SMTP connection before giving up (prevents long hangs). |
+| Variable | Description |
+|---|---|
+| `RESEND_API_KEY` | API key for Resend email service (required for OTP delivery). |
+| `RESEND_FROM_EMAIL` | Sender address (default: `onboarding@resend.dev`). |
+| `RESEND_TIMEOUT` | Seconds to wait for Resend API response before giving up (default: `15`). |
 
 **How it works:**
 
-- `DISABLE_EMAIL_OTP=true` + `OTP_DEV_MODE=true` (recommended for Render without SMTP):  Registration generates an OTP, skips SMTP, and redirects to `/verify-otp` where a yellow **🔧 Development Mode** banner displays the OTP. Enter it to complete verification.
-- `DISABLE_EMAIL_OTP=true` + `OTP_DEV_MODE=false`: Users are auto-verified on registration (no OTP step at all) and redirected to login.
-- `DISABLE_EMAIL_OTP=false` + `OTP_DEV_MODE=true`: SMTP is attempted; if it fails the OTP banner is shown. If SMTP succeeds the OTP is only logged to the console (not displayed in the browser).
-- `DISABLE_EMAIL_OTP=false` + `OTP_DEV_MODE=false` (default): Full SMTP email flow; set `MAIL_TIMEOUT` to limit hang time.
-
-> ⚠️ `OTP_DEV_MODE` exposes the OTP in the browser. Use only in non-production / trusted environments.
+- All new users registering with email/password are sent an OTP and must verify before logging in.
+- Users authenticating via Google OAuth are trusted and may log in without OTP verification.
+- Login is blocked for unverified users with the message: *"Login blocked: Verify OTP from email before login."*
 
 #### 6. Verify
 
