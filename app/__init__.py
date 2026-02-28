@@ -44,6 +44,13 @@ def create_app():
 
     # Create tables on startup only when explicitly requested via AUTO_CREATE_TABLES.
     # On Render/production, prefer running `flask db upgrade` instead.
+    if Config.OTP_DEV_MODE and not Config.DEBUG:
+        app.logger.warning(
+            "OTP_DEV_MODE is enabled but the app is running in production mode "
+            "(FLASK_DEBUG=0). OTP will NOT be displayed in HTML responses. "
+            "Disable OTP_DEV_MODE in production to suppress this warning."
+        )
+
     if app.config.get('AUTO_CREATE_TABLES', False):
         with app.app_context():
             db.create_all()
