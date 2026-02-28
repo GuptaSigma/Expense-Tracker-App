@@ -66,5 +66,22 @@ class Config:
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
     GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.0-flash')
 
+    # Google OAuth Configuration
+    GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+    GOOGLE_REDIRECT_URI = 'http://localhost:5000/auth/google/callback'
+
+    # Email Configuration (for OTP verification)
+    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
+    MAIL_USE_TLS = _as_bool('MAIL_USE_TLS', True)
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', 'noreply@expensetracker.com')
+    
+    # OTP Settings
+    OTP_LENGTH = 6
+    OTP_EXPIRY_MINUTES = 10
+
     # Market Data Settings
     MARKET_UPDATE_INTERVAL = 30  # seconds

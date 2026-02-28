@@ -6,25 +6,6 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 
-<!-- Navigation -->
-<nav class="fixed w-full z-50 nav-blur border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-            <i class="bi bi-bank2 text-2xl text-blue-600"></i>
-            <span class="text-xl font-extrabold tracking-tight text-slate-900">Expense<span class="text-blue-600">Tracker</span></span>
-        </div>
-        <div class="hidden md:flex space-x-8 font-medium text-slate-800">
-            <a href="#features" class="hover:text-blue-600 transition">Features</a>
-            <a href="#solutions" class="hover:text-blue-600 transition">Solutions</a>
-            <a href="#pricing" class="hover:text-blue-600 transition">Pricing</a>
-        </div>
-        <div class="flex items-center space-x-4">
-            <a href="{{ url_for('auth.login') }}" class="text-slate-800 font-semibold hover:text-blue-600">Login</a>
-            <a href="{{ url_for('auth.register') }}" class="btn-primary text-slate-900 px-5 py-2.5 rounded-lg font-bold text-sm">Join Now</a>
-        </div>
-    </div>
-</nav>
-
 <!-- Hero Section -->
 <section class="pt-32 pb-20 px-4">
     <div class="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
