@@ -87,15 +87,22 @@ def logout():
 @limiter.limit('10 per minute')
 def verify_otp():
     """Verify OTP for email verification"""
+    # Get email from session
+    pending_email = session.get('pending_verification_email', '')
+    
     if request.method == 'POST':
-        email = request.form.get('email', '').strip().lower()
+        email = pending_email
         otp = request.form.get('otp', '').strip()
+        
+        if not email:
+            flash('Session expired. Please register again.', 'warning')
+            return redirect(url_for('auth.register'))
         
         user = User.query.filter_by(email=email).first()
         
         if not user:
             flash('User not found', 'warning')
-            return render_template('verify_otp.html')
+            return render_template('verify_otp.html', pending_email=pending_email)
         
         if not user.otp or not user.otp_expiry:
             flash('No OTP found. Please register again.', 'warning')
@@ -104,7 +111,7 @@ def verify_otp():
         # Check if OTP expired
         if datetime.utcnow() > user.otp_expiry:
             flash('OTP has expired. Please request a new one.', 'warning')
-            return render_template('verify_otp.html')
+            return render_template('verify_otp.html', pending_email=pending_email)
         
         # Verify OTP
         if user.otp == otp:
@@ -113,24 +120,34 @@ def verify_otp():
             user.otp_expiry = None
             db.session.commit()
             
+            # Clear session
+            session.pop('pending_verification_email', None)
+            
             flash('Email verified successfully! Please login.', 'success')
             return redirect(url_for('auth.login'))
         else:
             flash('Invalid OTP. Please try again.', 'warning')
+            return render_template('verify_otp.html', pending_email=pending_email)
     
-    return render_template('verify_otp.html')
+    return render_template('verify_otp.html', pending_email=pending_email)
 
 
 @auth.route('/resend-otp', methods=['POST'])
 @limiter.limit('3 per minute')
 def resend_otp():
     """Resend OTP to email"""
-    email = request.form.get('email', '').strip().lower()
+    # Get email from session  
+    email = session.get('pending_verification_email')
+    
+    if not email:
+        flash('Session expired. Please register again.', 'warning')
+        return redirect(url_for('auth.register'))
+    
     user = User.query.filter_by(email=email).first()
     
     if not user:
         flash('User not found', 'warning')
-        return redirect(url_for('auth.verify_otp'))
+        return render_template('verify_otp.html', pending_email=email)
     
     # Generate new OTP
     otp = generate_otp()
@@ -144,7 +161,7 @@ def resend_otp():
     else:
         flash('Failed to send OTP. Please try again.', 'danger')
     
-    return redirect(url_for('auth.verify_otp'))
+    return render_template('verify_otp.html', pending_email=email)
 
 
 # Google OAuth Routes
