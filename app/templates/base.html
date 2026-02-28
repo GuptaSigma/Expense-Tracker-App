@@ -68,9 +68,9 @@
         {% if messages %}
             <div class="fixed top-24 right-4 z-50 space-y-2 max-w-md">
                 {% for category, message in messages %}
-                    <div class="bg-white rounded-xl p-4 border-l-4 {% if category == 'warning' %}border-yellow-500{% else %}border-green-500{% endif %} shadow-lg animate-slideIn">
+                    <div class="bg-white rounded-xl p-4 border-l-4 {% if category == 'warning' %}border-yellow-500{% elif category == 'danger' %}border-red-500{% elif category == 'info' %}border-blue-500{% else %}border-green-500{% endif %} shadow-lg animate-slideIn">
                         <div class="flex items-center">
-                            <i class="bi {% if category == 'warning' %}bi-exclamation-triangle-fill text-yellow-500{% else %}bi-check-circle-fill text-green-500{% endif %} text-xl mr-3"></i>
+                            <i class="bi {% if category == 'warning' %}bi-exclamation-triangle-fill text-yellow-500{% elif category == 'danger' %}bi-x-circle-fill text-red-500{% elif category == 'info' %}bi-info-circle-fill text-blue-500{% else %}bi-check-circle-fill text-green-500{% endif %} text-xl mr-3"></i>
                             <p class="text-slate-900">{{ message }}</p>
                         </div>
                     </div>

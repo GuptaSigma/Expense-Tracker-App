@@ -86,7 +86,7 @@ def register():
                 if Config.OTP_DEV_MODE:
                     session['pending_verification_email'] = email
                     session['dev_otp'] = otp
-                    flash('Registration successful! Email failed - DEV MODE: Check console for OTP.', 'warning')
+                    flash('DEV MODE: Email disabled. OTP is shown on the verification page.', 'info')
                     return redirect(url_for('auth.verify_otp'))
                 else:
                     # If email fails in production, warn and redirect to login
@@ -182,7 +182,7 @@ def resend_otp():
     else:
         if Config.OTP_DEV_MODE:
             session['dev_otp'] = otp
-            flash('Email failed - DEV MODE: Check console for OTP.', 'warning')
+            flash('DEV MODE: Email disabled. OTP is shown on the verification page.', 'info')
         else:
             flash('Failed to send OTP. Please try again.', 'danger')
     
