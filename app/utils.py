@@ -9,11 +9,26 @@ mail = Mail()
 
 
 def send_otp_email(email, otp, username):
-    """Send OTP verification email"""
+    """Send OTP verification email.
+
+    Returns True when the OTP has been delivered (or simulated) successfully.
+    Behaviour is controlled by three env vars:
+      DISABLE_EMAIL_OTP – skip OTP entirely; caller should auto-verify the user.
+      OTP_DEV_MODE      – log the OTP to the console instead of sending email.
+      MAIL_TIMEOUT      – seconds to wait for the SMTP connection (default 10).
+    """
+    if Config.DISABLE_EMAIL_OTP:
+        print(f"[DISABLE_EMAIL_OTP] Skipping OTP email for {email}")
+        return True
+
+    if Config.OTP_DEV_MODE:
+        print(f"[OTP_DEV_MODE] OTP for {email} ({username}): {otp}")
+        return True
+
     if not Config.MAIL_USERNAME or not Config.MAIL_PASSWORD:
         print(f"Email not configured. OTP for {email}: {otp}")
         return False
-    
+
     try:
         subject = "ExpenseTracker - OTP Verification"
         html_body = f"""
