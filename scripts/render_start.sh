@@ -18,6 +18,9 @@ if [ -z "$DATABASE_URL" ]; then
 fi
 
 # ── 2. Optionally run Flask-Migrate migrations ───────────────────────────────
+# Tell the Flask CLI which application to load.
+export FLASK_APP="${FLASK_APP:-wsgi}"
+
 case "${RUN_MIGRATIONS:-0}" in
     1|true|yes|on)
         echo "RUN_MIGRATIONS is enabled – running: flask db upgrade"
