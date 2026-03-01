@@ -187,19 +187,16 @@ Push to your connected branch or click **Manual Deploy** in Render. The startup 
 
 #### 5. OTP / Email settings on Render
 
-OTP email verification is mandatory for all normal (email/password) registrations. Configure your Gmail SMTP credentials to enable email delivery:
+OTP email verification is mandatory for all normal (email/password) registrations. Emails are delivered via **Google Apps Script** — no SMTP credentials required.
 
 | Variable | Description |
 |---|---|
-| `MAIL_USERNAME` | Your Gmail address (e.g. `yourgmail@gmail.com`). |
-| `MAIL_PASSWORD` | Gmail App Password (generated at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)). |
-| `MAIL_SERVER` | SMTP server (default: `smtp.gmail.com`). |
-| `MAIL_PORT` | SMTP port (default: `587`). |
-| `MAIL_USE_TLS` | Enable TLS (default: `True`). |
+| `DISABLE_EMAIL_OTP` | Set to `true` to skip OTP verification (auto-verify users). **Not recommended in production.** |
+| `OTP_DEV_MODE` | Set to `true` to log OTP to console instead of sending email. **Never use in production.** |
 
 **How it works:**
 
-- All new users registering with email/password are sent an OTP and must verify before logging in.
+- All new users registering with email/password are sent an OTP via the Google Apps Script Web App and must verify before logging in.
 - Users authenticating via Google OAuth are trusted and may log in without OTP verification.
 - Login is blocked for unverified users with the message: *"Login blocked: Verify OTP from email before login."*
 
@@ -579,46 +576,33 @@ report = analyzer.generate_comprehensive_report(
 
 ## 🔧 Troubleshooting OTP Email
 
-If OTP emails are not being delivered, check the application logs for `[OTP]` messages. Below are the most common causes and fixes.
+If OTP emails are not being delivered, check the application logs for `[OTP][GAS]` messages.
 
 ### Common Causes & Fixes
 
 | Symptom | Likely Cause | Fix |
 |---|---|---|
-| `MAIL_USERNAME or MAIL_PASSWORD is missing or blank` in logs | Env vars not set or contain only spaces | Set `MAIL_USERNAME` and `MAIL_PASSWORD` in Render → Environment, then redeploy |
-| `Authentication failed` / `535` error | Wrong Gmail credentials or App Password not used | Generate a Gmail App Password at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) |
-| Emails go to spam / not delivered | Gmail sender reputation | Ensure 2-Step Verification is enabled on your Google account |
-| Logs show credentials set but still fails | Stale deploy on Render | Click **Manual Deploy** → **Deploy latest commit** in Render |
-
-### Step-by-step Setup for Gmail SMTP
-
-1. Enable **2-Step Verification** on your Google account at [myaccount.google.com](https://myaccount.google.com).
-2. Go to [https://myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) and generate an App Password for "Mail".
-3. In your **Render** service dashboard, open **Environment** and set:
-   - `MAIL_USERNAME` = your Gmail address (e.g. `yourgmail@gmail.com`)
-   - `MAIL_PASSWORD` = the 16-character App Password (no spaces)
-4. Click **Manual Deploy** → **Deploy latest commit** so Render picks up the new variables.
-5. After deployment, trigger a registration and check logs for `[OTP] Email delivered successfully`.
+| `[OTP][GAS] Error` in logs | Network error reaching Apps Script endpoint | Check outbound connectivity from your host; redeploy and retry |
+| OTP email not received | Apps Script delivery issue | Check spam folder; retry registration after a moment |
 
 ### Environment Variables Reference
 
 | Variable | Required | Default | Notes |
 |---|---|---|---|
-| `MAIL_USERNAME` | Yes | — | Your Gmail address (e.g. `yourgmail@gmail.com`) |
-| `MAIL_PASSWORD` | Yes | — | Gmail App Password from [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) |
-| `MAIL_SERVER` | No | `smtp.gmail.com` | SMTP server hostname |
-| `MAIL_PORT` | No | `587` | SMTP port |
-| `MAIL_USE_TLS` | No | `True` | Whether to use STARTTLS |
+| `DISABLE_EMAIL_OTP` | No | `false` | Set `true` to skip OTP (auto-verify). Not for production. |
+| `OTP_DEV_MODE` | No | `false` | Set `true` to log OTP to console instead of sending email. Not for production. |
+
+No SMTP or mail-server credentials are needed — OTP delivery is handled by Google Apps Script.
 
 ### Development / Offline Mode
 
-When `MAIL_USERNAME` or `MAIL_PASSWORD` is not set, OTP emails are **not** sent — instead the OTP is printed to the console log:
+Set `OTP_DEV_MODE=true` in your `.env` to print the OTP to the console log instead of calling the Apps Script API:
 
 ```
-[OTP] MAIL_USERNAME or MAIL_PASSWORD is missing or blank. ... OTP for user@example.com: 123456
+[OTP][GAS] Response for user@example.com: ...
 ```
 
-Use this OTP directly in the `/verify-otp` form during local development.
+Use the printed OTP directly in the `/verify-otp` form during local development.
 
 ---
 

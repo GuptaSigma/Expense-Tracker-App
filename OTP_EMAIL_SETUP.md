@@ -1,59 +1,44 @@
 # OTP Email Setup Guide
 
-## How to Setup Email for OTP Verification
+## How OTP Email Delivery Works
 
-Your app now has OTP email verification for new registrations. Follow these steps to enable it:
+OTP verification emails are sent via a **Google Apps Script Web App API**. No SMTP credentials or email provider account is required.
 
-### Step 1: Gmail Setup (Recommended)
+### How It Works
 
-1. Go to [Google Account](https://myaccount.google.com)
-2. Click "Security" in the left menu
-3. Enable "2-Step Verification" if not already enabled
-4. Go back to Security and look for "App passwords"
-   - Select "Mail" and "Windows Computer" (or your device type)
-   - Google will generate a 16-character password
-5. Copy this password
+1. When a user registers, the app calls the Google Apps Script endpoint via `POST` request.
+2. The Apps Script sends the OTP email to the user's address.
+3. The user enters the OTP on the `/verify-otp` page to complete registration.
 
-### Step 2: Update .env File
+### Apps Script Web App URL
 
-Edit your `.env` file and add the following with your Gmail credentials:
+The endpoint used internally:
 
 ```
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USE_TLS=True
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-app-password-16-chars
+https://script.google.com/macros/s/AKfycbyPg_hLdrYjZBdvDRJ1LWzdE1RJXpl0mRq0im69DcWBkt9VqxOvRx3NqyqzbzOBXEuBfQ/exec
 ```
 
-### Step 3: Restart Your App
+No additional configuration is needed — the URL is hardcoded in `app/utils.py`.
 
-The OTP email feature will now be active. When users register:
-1. They fill in registration form
-2. OTP is generated and sent to their email
-3. User verifies OTP on `/verify-otp` page
-4. Only after verification, email is marked as verified
+### Environment Variables
+
+No mail-server variables are required. The only OTP-related env vars are:
+
+| Variable | Default | Description |
+|---|---|---|
+| `DISABLE_EMAIL_OTP` | `false` | Set to `true` to skip OTP verification (auto-verify on register). **Do not use in production.** |
+| `OTP_DEV_MODE` | `false` | Set to `true` to print OTP to console instead of sending via Apps Script. **Never enable in production.** |
 
 ### Important Notes
 
 - **OTP Expiry**: OTP expires after 10 minutes
 - **Resend Limit**: Users can resend OTP max 3 times per minute
-- **Development**: If email is not configured, OTP will print to console for testing
-- **Alternative Providers**: You can also use SendGrid, Mailgun, or other SMTP services
+- **No sender config needed**: All email delivery is handled by the Apps Script
+- **Fallback logging**: If the API call fails, the error is logged under `[OTP][GAS]`
 
 ### Security Features
 
-✅ OTP stored in database (hashed in production)
+✅ OTP stored in database
 ✅ OTP expiry time tracked
 ✅ Rate limiting on OTP requests
 ✅ CSRF protection on all forms
-✅ Secure email transmission (TLS)
-
-### Testing Without Email
-
-During development, if you don't configure email, the OTP will be printed to your console logs. You can then use that OTP in the verification form.
-
-```
-Example console output:
-[OTP] MAIL_USERNAME or MAIL_PASSWORD is missing or blank. ... OTP for test@example.com: 123456
-```
