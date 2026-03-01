@@ -13,7 +13,16 @@ from app.local_chatbot import LocalAIChatbot
 logger = logging.getLogger(__name__)
 
 def detect_language(text: str) -> str:
-    """Detect if text is in English or Hindi/Hinglish"""
+    """
+    Detect if text is in English or Hindi.
+
+    Language logic:
+    - Default language is English.
+    - Returns "hindi" only if the user's text contains Devanagari characters
+      (>15% of letter characters) or common Hindi romanization keywords.
+    - Returns "english" for all other input.
+    - No Hinglish mixing: responses are either pure English or pure Hindi.
+    """
     # Hindi characters ranges: Devanagari script
     hindi_chars = 0
     total_chars = 0
@@ -97,7 +106,7 @@ class GeminiChatbot:
         language = detect_language(message)
         
         if language == "hindi":
-            response_lang = "Respond in Hindi/Hinglish mix (like: 'Tera balance theek hai, ab invest kar!')"
+            response_lang = "Respond in pure Hindi (Devanagari script or clear Hindi romanization, no Hinglish mixing)."
         else:
             response_lang = "Respond in clear, professional English. Break down complex concepts simply."
         
@@ -138,8 +147,8 @@ INSTRUCTIONS:
         language = detect_language(message)
         
         if language == "hindi":
-            lang_instruction = "You are an expert Indian financial advisor. Always respond in Hindi/Hinglish."
-            example = "Give 2-3 sentences in Hindi/Hinglish with practical advice and emojis."
+            lang_instruction = "You are an expert Indian financial advisor. Always respond in pure Hindi only (no Hinglish, no English mixing)."
+            example = "Give 2-3 sentences in pure Hindi with practical advice and emojis."
         else:
             lang_instruction = "You are an expert Indian financial advisor. Always respond in clear, professional English."
             example = "Give 2-3 sentences in English with practical advice and emojis. Break down complex concepts simply."

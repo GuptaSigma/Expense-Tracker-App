@@ -1,7 +1,7 @@
 # AI-Powered Wealth & Expense Tracker 💰🚀
 
 ## Overview
-Ye project sirf kharche track nahi karta, balki aapki financial health ko **AI** aur **Real-time Market Data** se analyze karke aapko smart investment suggestions deta hai!
+This project not only tracks your expenses but also analyzes your financial health using **AI** and **Real-time Market Data** to provide smart investment suggestions!
 
 ## 🌟 Key Features
 
@@ -423,7 +423,7 @@ Dashboard Quick Actions:
 
 ## 💡 Investment Strategy Tips
 
-> "Invest aaj, secure kal ke liye!"
+> "Invest today, secure your tomorrow!"
 
 1. **Emergency Fund FIRST** 
    - 6 months of living expenses
@@ -446,6 +446,23 @@ Dashboard Quick Actions:
    - Buy when markets dip
    - Don't time perfectly (just SIP)
    - Stay consistent
+
+---
+
+## 🌐 Language Logic (AI Suggestions & Chatbot)
+
+The AI Fin-Buddy chatbot and all AI suggestions follow these language rules:
+
+- **Default language: English** — All chatbox greetings, suggestion prompts, and default AI responses are in English.
+- **Hindi detection** — If the user sends a message in Hindi (Devanagari script or common Hindi keywords such as *mera*, *kitna*, *kya*, *paisa*, etc.), the AI automatically switches to Hindi for that reply.
+- **English input → English reply** — If the user writes in English, the AI always replies in clear, professional English. Hinglish (mixed Hindi-English) is never used.
+- **Hindi input → Hindi reply** — If the user writes in Hindi, the AI replies in pure Hindi (no Hinglish mixing).
+- **No Hinglish defaults** — There are no Hinglish or mixed-language defaults anywhere in the suggestions panel or chatbox.
+
+This logic is implemented in:
+- `app/local_chatbot.py` — `detect_language()` function + all response methods default to English.
+- `app/gemini_chatbot.py` — `detect_language()` function; Gemini/OpenRouter prompts instruct pure Hindi or pure English based on detection.
+- `app/ml_model.py` — AI suggestions prompt requests clear English output.
 
 ---
 

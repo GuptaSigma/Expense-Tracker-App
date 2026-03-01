@@ -103,11 +103,11 @@
             <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3">
                 <div class="text-left">
                     <div class="bg-blue-100 text-slate-900 rounded-lg p-3 inline-block max-w-xs">
-                        <p><i class="bi bi-robot"></i> Namaste! Main hoon AI Fin-Buddy, tera financial advisor! 💰</p>
+                        <p><i class="bi bi-robot"></i> Hello! I am AI Fin-Buddy, your personal financial advisor! 💰</p>
                         <ul class="mt-2 space-y-1 text-sm">
-                            <li>"Mera balance kitna hai?"</li>
-                            <li>"Bitcoin pe invest karun kya?"</li>
-                            <li>"Mera spending kaisa hai?"</li>
+                            <li>"What is my current balance?"</li>
+                            <li>"Should I invest in Bitcoin?"</li>
+                            <li>"How is my spending this month?"</li>
                         </ul>
                     </div>
                 </div>
@@ -119,7 +119,7 @@
                         type="text" 
                         id="chat-input" 
                         class="flex-1 px-4 py-2.5 rounded-full bg-slate-100 border border-gray-300 text-slate-900 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/50"
-                        placeholder="Stock, budget, expense poocho..."
+                        placeholder="Ask about stocks, budget, expenses..."
                         onkeypress="if(event.key === 'Enter') sendChatMessage()"
                     >
                     <button 
@@ -168,7 +168,7 @@
                 if (data.status === 'success') {
                     addMessageToChat(data.message, 'bot');
                 } else {
-                    addMessageToChat('Oops! Kuch error aaya. Dobara try karein! 🤖', 'bot');
+                    addMessageToChat('Oops! Something went wrong. Please try again! 🤖', 'bot');
                 }
             })
             .catch(() => addMessageToChat('Connection error. Please try again! 🤖', 'bot'))

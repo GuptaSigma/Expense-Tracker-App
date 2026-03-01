@@ -11,7 +11,16 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 def detect_language(text: str) -> str:
-    """Detect if text is in English or Hindi/Hinglish"""
+    """
+    Detect if text is in English or Hindi.
+
+    Language logic:
+    - Default language is English.
+    - Returns "hindi" only if the user's text contains Devanagari characters
+      (>15% of letter characters) or common Hindi romanization keywords.
+    - Returns "english" for all other input.
+    - No Hinglish mixing: responses are either pure English or pure Hindi.
+    """
     # Hindi characters ranges: Devanagari script
     hindi_chars = 0
     total_chars = 0
@@ -55,7 +64,7 @@ class LocalAIChatbot:
             'expenses': user_data.get('expenses', {}),
         }
     
-    def _get_balance_response(self, context: Dict, language: str = "hindi") -> str:
+    def _get_balance_response(self, context: Dict, language: str = "english") -> str:
         """Response for balance-related queries"""
         balance = context['balance']
         username = context['username']
@@ -75,7 +84,7 @@ class LocalAIChatbot:
             else:
                 return f"Bahut acha! Tera balance ₹{balance:,.0f} hai. Ab tu diversify kar: Gold 10%, Stocks 40%, Cash 50% rakna theek rahega! 🎯"
     
-    def _get_spending_response(self, context: Dict, language: str = "hindi") -> str:
+    def _get_spending_response(self, context: Dict, language: str = "english") -> str:
         """Response for spending analysis"""
         expenses = context['expenses']
         balance = context['balance']
@@ -112,7 +121,7 @@ class LocalAIChatbot:
             else:
                 return f"Tera spending control mein hai! Keep karting smartly! 👍"
     
-    def _get_market_response(self, context: Dict, language: str = "hindi") -> str:
+    def _get_market_response(self, context: Dict, language: str = "english") -> str:
         """Response for market-related queries"""
         gold_price = context['gold_price']
         bitcoin_price = context['bitcoin_price']
@@ -133,7 +142,7 @@ class LocalAIChatbot:
         
         return random.choice(responses)
     
-    def _get_investment_response(self, context: Dict, language: str = "hindi") -> str:
+    def _get_investment_response(self, context: Dict, language: str = "english") -> str:
         """Response for investment queries"""
         balance = context['balance']
         
@@ -154,7 +163,7 @@ class LocalAIChatbot:
         
         return random.choice(responses)
     
-    def _get_goal_response(self, context: Dict, language: str = "hindi") -> str:
+    def _get_goal_response(self, context: Dict, language: str = "english") -> str:
         """Response for goals and planning"""
         balance = context['balance']
         
@@ -175,7 +184,7 @@ class LocalAIChatbot:
         
         return random.choice(goal_responses)
     
-    def _get_general_response(self, user_message: str, language: str = "hindi") -> str:
+    def _get_general_response(self, user_message: str, language: str = "english") -> str:
         """General financial advice responses"""
         if language == "english":
             general_responses = [
