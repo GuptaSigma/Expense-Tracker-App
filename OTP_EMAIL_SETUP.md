@@ -15,7 +15,7 @@ OTP verification emails are sent via a **Google Apps Script Web App API**. No SM
 The endpoint used internally:
 
 ```
-https://script.google.com/macros/s/AKfycbyPg_hLdrYjZBdvDRJ1LWzdE1RJXpl0mRq0im69DcWBkt9VqxOvRx3NqyqzbzOBXEuBfQ/exec
+https://script.google.com/macros/s/AKfycbxoStF25frOY88NGrFemsiDqIoTgOD3sQzUYF6kwp4rTXHlmH3AlZRR9caNMTwDzIrl/exec
 ```
 
 No additional configuration is needed — the URL is hardcoded in `app/utils.py`.

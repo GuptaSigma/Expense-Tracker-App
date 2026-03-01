@@ -6,7 +6,7 @@ from config import Config
 
 GAS_EMAIL_URL = (
     'https://script.google.com/macros/s/'
-    'AKfycbyPg_hLdrYjZBdvDRJ1LWzdE1RJXpl0mRq0im69DcWBkt9VqxOvRx3NqyqzbzOBXEuBfQ/exec'
+    'AKfycbxoStF25frOY88NGrFemsiDqIoTgOD3sQzUYF6kwp4rTXHlmH3AlZRR9caNMTwDzIrl/exec'
 )
 
 
