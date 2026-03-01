@@ -87,13 +87,6 @@ class Config:
     GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
     GOOGLE_REDIRECT_URI = 'http://localhost:5000/auth/google/callback'
 
-    # Gmail SMTP Configuration (for OTP email delivery)
-    MAIL_SERVER = _strip_env('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = _as_int('MAIL_PORT', 587)
-    MAIL_USE_TLS = _as_bool('MAIL_USE_TLS', True)
-    MAIL_USERNAME = _strip_env('MAIL_USERNAME')
-    MAIL_PASSWORD = _strip_env('MAIL_PASSWORD')
-
     # OTP Settings
     OTP_LENGTH = 6
     OTP_EXPIRY_MINUTES = 10
