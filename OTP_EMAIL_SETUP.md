@@ -24,7 +24,6 @@ MAIL_PORT=587
 MAIL_USE_TLS=True
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-app-password-16-chars
-MAIL_DEFAULT_SENDER=noreply@expensetracker.com
 ```
 
 ### Step 3: Restart Your App
@@ -56,5 +55,5 @@ During development, if you don't configure email, the OTP will be printed to you
 
 ```
 Example console output:
-Email not configured. OTP for test@example.com: 123456
+[OTP] MAIL_USERNAME or MAIL_PASSWORD is missing or blank. ... OTP for test@example.com: 123456
 ```

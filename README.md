@@ -187,13 +187,15 @@ Push to your connected branch or click **Manual Deploy** in Render. The startup 
 
 #### 5. OTP / Email settings on Render
 
-OTP email verification is mandatory for all normal (email/password) registrations. Configure your Resend API key to enable email delivery:
+OTP email verification is mandatory for all normal (email/password) registrations. Configure your Gmail SMTP credentials to enable email delivery:
 
 | Variable | Description |
 |---|---|
-| `RESEND_API_KEY` | API key for Resend email service (required for OTP delivery). |
-| `RESEND_FROM_EMAIL` | Sender address (default: `onboarding@resend.dev`). |
-| `RESEND_TIMEOUT` | Seconds to wait for Resend API response before giving up (default: `15`). |
+| `MAIL_USERNAME` | Your Gmail address (e.g. `yourgmail@gmail.com`). |
+| `MAIL_PASSWORD` | Gmail App Password (generated at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)). |
+| `MAIL_SERVER` | SMTP server (default: `smtp.gmail.com`). |
+| `MAIL_PORT` | SMTP port (default: `587`). |
+| `MAIL_USE_TLS` | Enable TLS (default: `True`). |
 
 **How it works:**
 
@@ -583,35 +585,37 @@ If OTP emails are not being delivered, check the application logs for `[OTP]` me
 
 | Symptom | Likely Cause | Fix |
 |---|---|---|
-| `RESEND_API_KEY is missing or blank` in logs | Env var not set or contains only spaces | Set `RESEND_API_KEY` in Render → Environment, then redeploy |
-| `HTTP 403 Forbidden` | API key invalid, revoked, or sender not verified | Regenerate key at [resend.com/api-keys](https://resend.com/api-keys); update env var |
-| `HTTP 401 Unauthorized` | Wrong or malformed API key | Copy key again carefully — no extra spaces |
-| Emails go to spam / not delivered | Wrong sender address | Use `onboarding@resend.dev` for sandbox; verify custom domain in Resend dashboard for production |
-| Logs show correct key length but still fails | Stale deploy on Render | Click **Manual Deploy** → **Deploy latest commit** in Render |
+| `MAIL_USERNAME or MAIL_PASSWORD is missing or blank` in logs | Env vars not set or contain only spaces | Set `MAIL_USERNAME` and `MAIL_PASSWORD` in Render → Environment, then redeploy |
+| `Authentication failed` / `535` error | Wrong Gmail credentials or App Password not used | Generate a Gmail App Password at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) |
+| Emails go to spam / not delivered | Gmail sender reputation | Ensure 2-Step Verification is enabled on your Google account |
+| Logs show credentials set but still fails | Stale deploy on Render | Click **Manual Deploy** → **Deploy latest commit** in Render |
 
-### Step-by-step Fix for 403 Forbidden
+### Step-by-step Setup for Gmail SMTP
 
-1. Go to [https://resend.com/api-keys](https://resend.com/api-keys) and create a new API key.
-2. In your **Render** service dashboard, open **Environment** and update `RESEND_API_KEY` with the new value.
-   - Make sure there are **no leading/trailing spaces** in the value field.
-3. Set `RESEND_FROM_EMAIL` to `onboarding@resend.dev` for sandbox testing (no domain verification required).
-4. Click **Manual Deploy** → **Deploy latest commit** so Render picks up the new variable.
+1. Enable **2-Step Verification** on your Google account at [myaccount.google.com](https://myaccount.google.com).
+2. Go to [https://myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) and generate an App Password for "Mail".
+3. In your **Render** service dashboard, open **Environment** and set:
+   - `MAIL_USERNAME` = your Gmail address (e.g. `yourgmail@gmail.com`)
+   - `MAIL_PASSWORD` = the 16-character App Password (no spaces)
+4. Click **Manual Deploy** → **Deploy latest commit** so Render picks up the new variables.
 5. After deployment, trigger a registration and check logs for `[OTP] Email delivered successfully`.
 
 ### Environment Variables Reference
 
 | Variable | Required | Default | Notes |
 |---|---|---|---|
-| `RESEND_API_KEY` | Yes | — | Resend API key from [resend.com/api-keys](https://resend.com/api-keys) |
-| `RESEND_FROM_EMAIL` | No | `onboarding@resend.dev` | Use `onboarding@resend.dev` for sandbox; custom address requires verified domain |
-| `RESEND_TIMEOUT` | No | `15` | Seconds before the API call times out |
+| `MAIL_USERNAME` | Yes | — | Your Gmail address (e.g. `yourgmail@gmail.com`) |
+| `MAIL_PASSWORD` | Yes | — | Gmail App Password from [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) |
+| `MAIL_SERVER` | No | `smtp.gmail.com` | SMTP server hostname |
+| `MAIL_PORT` | No | `587` | SMTP port |
+| `MAIL_USE_TLS` | No | `True` | Whether to use STARTTLS |
 
 ### Development / Offline Mode
 
-When `RESEND_API_KEY` is not set, OTP emails are **not** sent — instead the OTP is printed to the console log:
+When `MAIL_USERNAME` or `MAIL_PASSWORD` is not set, OTP emails are **not** sent — instead the OTP is printed to the console log:
 
 ```
-[OTP] RESEND_API_KEY is missing or blank. ... OTP for user@example.com: 123456
+[OTP] MAIL_USERNAME or MAIL_PASSWORD is missing or blank. ... OTP for user@example.com: 123456
 ```
 
 Use this OTP directly in the `/verify-otp` form during local development.
