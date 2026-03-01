@@ -51,6 +51,15 @@
                 </select>
             </div>
 
+            <!-- Description Field -->
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="bi bi-chat-left-text"></i> Description
+                </label>
+                <textarea name="description" class="form-control" 
+                          placeholder="Add details about this income (optional)...">{{ income.description or '' }}</textarea>
+            </div>
+
             <!-- Buttons -->
             <div class="button-group">
                 <button type="submit" class="btn-submit">

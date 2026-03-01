@@ -86,21 +86,30 @@ def dashboard():
     category_labels = [c[0] for c in categories]
     category_data = [float(c[1]) for c in categories]
     
-    # Budget tracking with default limits
-    default_budgets = {
-        'Food': 5000,
-        'Transport': 3000,
-        'Entertainment': 2000,
-        'Shopping': 4000,
-        'Bills': 5000,
-        'Health': 3000,
-        'Education': 6000,
-        'Other': 2000
+    # Budget tracking - percentage-based allocation
+    # Base budget percentages (total = 100%)
+    budget_percentages = {
+        'Food': 16.67,           # 5000/30000
+        'Transport': 10,         # 3000/30000
+        'Entertainment': 6.67,   # 2000/30000
+        'Shopping': 13.33,       # 4000/30000
+        'Bills': 16.67,          # 5000/30000
+        'Health': 10,            # 3000/30000
+        'Education': 20,         # 6000/30000
+        'Other': 6.67            # 2000/30000
     }
+    
+    # Calculate dynamic budgets based on user's total income
+    # If no income, set minimum budget to help with planning
+    user_income = total_income if total_income > 0 else 30000
+    
+    dynamic_budgets = {}
+    for category, percentage in budget_percentages.items():
+        dynamic_budgets[category] = round(user_income * (percentage / 100), 2)
     
     # Calculate budget progress for each category
     budget_progress = []
-    for category, budget_limit in default_budgets.items():
+    for category, budget_limit in dynamic_budgets.items():
         spent = db.session.query(db.func.sum(Expense.amount))\
             .filter_by(user_id=current_user.id, category=category).scalar() or 0
         percentage = (spent / budget_limit * 100) if budget_limit > 0 else 0
@@ -237,6 +246,7 @@ def add_income():
         income = Income(
             amount=float(request.form.get('amount')),
             source=request.form.get('source'),
+            description=request.form.get('description', ''),
             user_id=current_user.id
         )
         db.session.add(income)
@@ -305,6 +315,7 @@ def edit_income(income_id):
     if request.method == 'POST':
         income.amount = float(request.form.get('amount'))
         income.source = request.form.get('source')
+        income.description = request.form.get('description', '')
         db.session.commit()
         flash('Income updated successfully!', 'success')
         return redirect(url_for('main.dashboard'))
