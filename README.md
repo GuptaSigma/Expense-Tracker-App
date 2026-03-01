@@ -162,11 +162,11 @@ In your Render service → **Environment**, add:
 |---|---|---|
 | `DATABASE_URL` | `postgresql://...` | Your Neon connection string |
 | `SECRET_KEY` | *(random string)* | Generate with `python -c "import secrets; print(secrets.token_hex(32))"` |
-| `RUN_MIGRATIONS` | `1` | Runs `flask db upgrade` on every deploy (recommended) |
+| `RUN_MIGRATIONS` | `1` | Runs `flask db upgrade` on every deploy (**default: enabled**; set to `0` to disable) |
 | `AUTO_CREATE_TABLES` | `0` | Alternative to migrations: creates tables via `db.create_all()` if set to `1` |
 | `SESSION_COOKIE_SECURE` | `1` | Required for HTTPS on Render |
 
-> **First deploy:** Set `RUN_MIGRATIONS=1`. The startup script will run `flask db upgrade`, which creates all tables and stamps the database. `AUTO_CREATE_TABLES` is an alternative (uses `db.create_all()` instead of migrations) — pick one approach.
+> **Migrations:** `flask db upgrade` runs automatically on every deploy (the `RUN_MIGRATIONS` default is now `1`). Set `RUN_MIGRATIONS=0` to disable. `AUTO_CREATE_TABLES` is an alternative (uses `db.create_all()` instead of migrations) — pick one approach.
 
 #### 3. Set the Start Command
 
