@@ -10,9 +10,23 @@ def send_otp_email(email, otp, username):
 
     Returns True when the OTP has been delivered successfully.
     """
-    if not Config.RESEND_API_KEY:
-        print(f"Resend API key not configured. OTP for {email}: {otp}")
+    api_key = Config.RESEND_API_KEY
+    from_email = Config.RESEND_FROM_EMAIL
+
+    # Debug: log configuration state (key length only, never the key itself)
+    if not api_key:
+        print(
+            "[OTP] RESEND_API_KEY is missing or blank. "
+            "Set the environment variable in your deployment dashboard (no extra spaces). "
+            f"OTP for {email}: {otp}"
+        )
         return False
+
+    print(
+        f"[OTP] Sending OTP email to {email} | "
+        f"API key length: {len(api_key)} | "
+        f"Sender: {from_email}"
+    )
 
     try:
         subject = "ExpenseTracker OTP Verification"
@@ -48,11 +62,11 @@ def send_otp_email(email, otp, username):
         response = requests.post(
             "https://api.resend.com/emails",
             headers={
-                "Authorization": f"Bearer {Config.RESEND_API_KEY}",
+                "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
             },
             json={
-                "from": Config.RESEND_FROM_EMAIL,
+                "from": from_email,
                 "to": [email],
                 "subject": subject,
                 "html": html_body,
@@ -60,11 +74,26 @@ def send_otp_email(email, otp, username):
             timeout=Config.RESEND_TIMEOUT,
         )
         if response.status_code in (200, 201):
+            print(f"[OTP] Email delivered successfully to {email}")
             return True
-        print(f"Resend API error: HTTP {response.status_code}")
+
+        # Log the full error details to help diagnose deployment issues.
+        error_body = response.text
+        print(
+            f"[OTP] Resend API error: HTTP {response.status_code} | "
+            f"Body: {error_body}"
+        )
+        if response.status_code == 403:
+            print(
+                "[OTP] HTTP 403 Forbidden: the API key may be invalid, revoked, or "
+                "the sender domain is not verified. "
+                "Action: regenerate the key at https://resend.com/api-keys, "
+                "update RESEND_API_KEY in your deployment environment (no extra spaces), "
+                "and redeploy. For sandbox use, set RESEND_FROM_EMAIL=onboarding@resend.dev."
+            )
         return False
     except Exception as e:
-        print(f"Error sending OTP email: {str(e)}")
+        print(f"[OTP] Exception while sending OTP email: {str(e)}")
         return False
 
 

@@ -22,6 +22,12 @@ def _as_bool(name, default):
     return value.strip().lower() in {'1', 'true', 'yes', 'on'}
 
 
+def _strip_env(name, default=None):
+    """Return the env var stripped of surrounding whitespace, or *default* when blank/unset."""
+    value = (os.getenv(name) or '').strip()
+    return value if value else default
+
+
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-change-me')
 
@@ -82,8 +88,9 @@ class Config:
     GOOGLE_REDIRECT_URI = 'http://localhost:5000/auth/google/callback'
 
     # Resend API Configuration (for OTP email delivery)
-    RESEND_API_KEY = os.getenv('RESEND_API_KEY')
-    RESEND_FROM_EMAIL = os.getenv('RESEND_FROM_EMAIL', 'onboarding@resend.dev')
+    # Whitespace is stripped to prevent silent failures from copy/paste in the Render dashboard.
+    RESEND_API_KEY = _strip_env('RESEND_API_KEY')
+    RESEND_FROM_EMAIL = _strip_env('RESEND_FROM_EMAIL', 'onboarding@resend.dev')
     RESEND_TIMEOUT = _as_int('RESEND_TIMEOUT', 15)
 
     # OTP Settings
