@@ -261,7 +261,7 @@ Total Monthly Spending: ₹{round(total_spend, 2)}
 Spending by Category:
 {spending_summary}
 
-Provide 3-4 short, actionable budget optimization suggestions for an Indian user in Hindi-influenced English. 
+Provide 3-4 short, actionable budget optimization suggestions for an Indian user in clear English. 
 Keep suggestions practical and specific to the spending patterns. Format as bullet points."""
 
             # Call OpenRouter API
