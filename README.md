@@ -575,6 +575,49 @@ report = analyzer.generate_comprehensive_report(
 # - Retirement corpus needed
 ```
 
+## 🔧 Troubleshooting OTP Email
+
+If OTP emails are not being delivered, check the application logs for `[OTP]` messages. Below are the most common causes and fixes.
+
+### Common Causes & Fixes
+
+| Symptom | Likely Cause | Fix |
+|---|---|---|
+| `RESEND_API_KEY is missing or blank` in logs | Env var not set or contains only spaces | Set `RESEND_API_KEY` in Render → Environment, then redeploy |
+| `HTTP 403 Forbidden` | API key invalid, revoked, or sender not verified | Regenerate key at [resend.com/api-keys](https://resend.com/api-keys); update env var |
+| `HTTP 401 Unauthorized` | Wrong or malformed API key | Copy key again carefully — no extra spaces |
+| Emails go to spam / not delivered | Wrong sender address | Use `onboarding@resend.dev` for sandbox; verify custom domain in Resend dashboard for production |
+| Logs show correct key length but still fails | Stale deploy on Render | Click **Manual Deploy** → **Deploy latest commit** in Render |
+
+### Step-by-step Fix for 403 Forbidden
+
+1. Go to [https://resend.com/api-keys](https://resend.com/api-keys) and create a new API key.
+2. In your **Render** service dashboard, open **Environment** and update `RESEND_API_KEY` with the new value.
+   - Make sure there are **no leading/trailing spaces** in the value field.
+3. Set `RESEND_FROM_EMAIL` to `onboarding@resend.dev` for sandbox testing (no domain verification required).
+4. Click **Manual Deploy** → **Deploy latest commit** so Render picks up the new variable.
+5. After deployment, trigger a registration and check logs for `[OTP] Email delivered successfully`.
+
+### Environment Variables Reference
+
+| Variable | Required | Default | Notes |
+|---|---|---|---|
+| `RESEND_API_KEY` | Yes | — | Resend API key from [resend.com/api-keys](https://resend.com/api-keys) |
+| `RESEND_FROM_EMAIL` | No | `onboarding@resend.dev` | Use `onboarding@resend.dev` for sandbox; custom address requires verified domain |
+| `RESEND_TIMEOUT` | No | `15` | Seconds before the API call times out |
+
+### Development / Offline Mode
+
+When `RESEND_API_KEY` is not set, OTP emails are **not** sent — instead the OTP is printed to the console log:
+
+```
+[OTP] RESEND_API_KEY is missing or blank. ... OTP for user@example.com: 123456
+```
+
+Use this OTP directly in the `/verify-otp` form during local development.
+
+---
+
 ## 📞 Support & Contribution
 
 Built with ❤️ using Flask, Scikit-learn, TensorFlow, and yfinance
