@@ -4,7 +4,7 @@
 #
 # Environment variables:
 #   DATABASE_URL      (required) PostgreSQL connection string
-#   RUN_MIGRATIONS    (optional) set to 1/true/yes/on to run `flask db upgrade` before starting
+#   RUN_MIGRATIONS    (optional) set to 0/false/no/off to skip `flask db upgrade` (default: enabled)
 #   AUTO_CREATE_TABLES (optional) set to 1/true/yes/on to create tables via db.create_all() on startup
 
 set -e
@@ -21,7 +21,7 @@ fi
 # Tell the Flask CLI which application to load.
 export FLASK_APP="${FLASK_APP:-wsgi}"
 
-case "${RUN_MIGRATIONS:-0}" in
+case "${RUN_MIGRATIONS:-1}" in
     1|true|yes|on)
         echo "RUN_MIGRATIONS is enabled – running: flask db upgrade"
         flask db upgrade
