@@ -9,6 +9,7 @@ Handles real-time market data from multiple sources:
 import requests
 from datetime import datetime
 from config import Config
+from app.gold_service import fetch_gold_price_inr
 import logging
 import random
 
@@ -19,41 +20,15 @@ class MarketDataCollector:
     """Fetch real-time market data from multiple sources"""
     
     def __init__(self):
-        self.gold_api_key = Config.GOLD_API_KEY
-        self.gold_api_url = Config.GOLD_API_URL
         self.cache = {}
         self.cache_timestamp = {}
     
     def get_gold_prices(self):
-        """Fetch Gold & Silver prices from GoldAPI.io"""
+        """Fetch Gold price in INR directly from GoldAPI.io (XAU/INR endpoint)."""
         try:
-            # Gold rates in USD - convert to INR
-            endpoint = f"{self.gold_api_url}/XAU/USD"
-            headers = {
-                'x-access-token': self.gold_api_key
-            }
-            
-            response = requests.get(endpoint, headers=headers, timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Convert USD to INR (1 USD = ~83 INR)
-                usd_price = data.get('price', 0)
-                inr_conversion = 83  # Approximate conversion rate
-                inr_price = round(usd_price * inr_conversion / 31.1035, 2)  # Convert per troy oz to per gram
-                
-                return {
-                    'gold_price_24k': inr_price,
-                    'currency': 'INR',
-                    'timestamp': datetime.now().isoformat(),
-                    'status': 'success'
-                }
-            else:
-                logger.warning(f"GoldAPI returned status {response.status_code}")
-                return self._get_default_prices()
-        
+            return fetch_gold_price_inr()
         except Exception as e:
-            logger.error(f"Error fetching gold prices: {str(e)}")
+            logger.warning(f"Gold price fetch failed ({type(e).__name__}), using fallback: {str(e)}")
             return self._get_default_prices()
     
     def _get_default_prices(self):
