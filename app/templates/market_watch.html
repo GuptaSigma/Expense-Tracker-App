@@ -55,7 +55,7 @@
                         <span class="text-green-400 text-sm font-semibold">Stable</span>
                     </div>
                     <p class="text-slate-700 text-sm mb-1">Gold (24K)</p>
-                    <p class="text-slate-900 text-xl font-bold">₹{{ "%.2f"|format(market_data.gold.gold_price_24k) }}/g</p>
+                    <p class="text-slate-900 text-xl font-bold">{% if market_data.gold.gold_price_24k is not none %}₹{{ "%.2f"|format(market_data.gold.gold_price_24k) }}/g{% else %}Unavailable{% endif %}</p>
                 </div>
                 
                 <!-- Nifty 50 -->

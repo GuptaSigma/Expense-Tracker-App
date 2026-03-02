@@ -24,9 +24,14 @@ class MarketDataCollector:
         self.cache_timestamp = {}
     
     def get_gold_prices(self):
-        """Fetch Gold price in INR directly from GoldAPI.io (XAU/INR endpoint)."""
+        """Fetch Gold price in INR directly (primary: GoldAPI, fallback: MetalpriceAPI)."""
         try:
-            return fetch_gold_price_inr()
+            result = fetch_gold_price_inr()
+            if result.get("gold_price_24k") is None:
+                # Both providers failed — keep gold_price_24k as None so the UI
+                # can display 'Unavailable' instead of crashing.
+                logger.warning("Gold price unavailable from all providers")
+            return result
         except Exception as e:
             logger.warning(f"Gold price fetch failed ({type(e).__name__}), using fallback: {str(e)}")
             return self._get_default_prices()
