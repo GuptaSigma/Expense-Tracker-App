@@ -162,26 +162,39 @@ def dashboard():
         expense_trend_labels.append((datetime.now() - timedelta(days=29-i)).strftime('%b %d'))
         expense_trend_data.append(daily_expenses_dict.get(day, 0))
     
-    # 2. Monthly comparison (last 6 months)
+    # 2. Monthly comparison (last 6 months) - correct calendar month arithmetic
     monthly_data = []
+    now = datetime.now()
     for i in range(6):
-        month_start = (datetime.now().replace(day=1) - timedelta(days=i*30)).replace(day=1)
-        next_month = (month_start + timedelta(days=32)).replace(day=1)
-        
+        # Subtract i months using safe calendar arithmetic (no timedelta approximation)
+        years_back = i // 12
+        months_back = i % 12
+        month = now.month - months_back
+        if month <= 0:
+            month += 12
+            years_back += 1
+        year = now.year - years_back
+
+        month_start = datetime(year, month, 1)
+        if month == 12:
+            next_month_start = datetime(year + 1, 1, 1)
+        else:
+            next_month_start = datetime(year, month + 1, 1)
+
         month_expense = db.session.query(db.func.sum(Expense.amount))\
             .filter(
                 Expense.user_id == current_user.id,
                 Expense.date >= month_start,
-                Expense.date < next_month
+                Expense.date < next_month_start
             ).scalar() or 0
-        
+
         month_income = db.session.query(db.func.sum(Income.amount))\
             .filter(
                 Income.user_id == current_user.id,
                 Income.date >= month_start,
-                Income.date < next_month
+                Income.date < next_month_start
             ).scalar() or 0
-        
+
         monthly_data.append({
             'month': month_start.strftime('%b %Y'),
             'income': float(month_income),

@@ -280,7 +280,7 @@
             <h5 class="text-xl font-bold text-slate-900 mb-4">
                 <i class="bi bi-bar-chart mr-2 text-purple-600"></i>Income vs Expense (6 Months)
             </h5>
-            {% if monthly_labels %}
+            {% if monthly_income_data | sum > 0 or monthly_expense_data | sum > 0 %}
                 <div class="relative h-[300px]">
                     <canvas id="comparisonChart"
                             data-labels='{{ monthly_labels|tojson|safe }}'
