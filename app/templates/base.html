@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="user-id" content="{{ current_user.id if current_user.is_authenticated else '' }}">
     <title>{% block title %}ExpenseTracker{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -63,21 +64,7 @@
         </div>
     </nav>
 
-    <!-- Flash Messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="fixed top-24 right-4 z-50 space-y-2 max-w-md">
-                {% for category, message in messages %}
-                    <div class="bg-white rounded-xl p-4 border-l-4 {% if category == 'warning' %}border-yellow-500{% elif category == 'danger' %}border-red-500{% elif category == 'info' %}border-blue-500{% else %}border-green-500{% endif %} shadow-lg animate-slideIn">
-                        <div class="flex items-center">
-                            <i class="bi {% if category == 'warning' %}bi-exclamation-triangle-fill text-yellow-500{% elif category == 'danger' %}bi-x-circle-fill text-red-500{% elif category == 'info' %}bi-info-circle-fill text-blue-500{% else %}bi-check-circle-fill text-green-500{% endif %} text-xl mr-3"></i>
-                            <p class="text-slate-900">{{ message }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
+    <!-- Flash Messages are shown as dismissible toasts below -->
 
     <!-- Main Content -->
     <main class="min-h-screen">
@@ -194,7 +181,7 @@
         }
 
         // Toast Notification System
-        function showToast(message, type = 'info', duration = 5000) {
+        function showToast(message, type = 'info', duration = 5000, onDismiss = null) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -208,14 +195,21 @@
             };
             
             toast.innerHTML = `
-                <i class="bi ${icons[type]} text-2xl"></i>
+                <i class="bi ${icons[type] || icons.info} text-2xl"></i>
                 <div class="flex-1">
                     <div class="font-semibold">${escapeHtml(message)}</div>
                 </div>
-                <button onclick="this.parentElement.remove()" class="hover:opacity-70 transition-opacity">
+                <button class="hover:opacity-70 transition-opacity" aria-label="Dismiss alert">
                     <i class="bi bi-x-lg"></i>
                 </button>
             `;
+
+            const closeBtn = toast.querySelector('button');
+            closeBtn.addEventListener('click', function() {
+                if (typeof onDismiss === 'function') { onDismiss(); }
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 300);
+            });
             
             container.appendChild(toast);
             
@@ -225,12 +219,46 @@
             }, duration);
         }
 
-        // Check for flash messages and show as toasts
+        // Check for flash messages and show as dismissible toasts
         document.addEventListener('DOMContentLoaded', function() {
+            const userId = (document.querySelector('meta[name="user-id"]') || {}).content || 'guest';
+
+            // --- Alert dismissal helpers (localStorage) ---
+            function _dismissedKey() {
+                return 'dismissed_alerts_' + userId;
+            }
+            function getDismissedAlerts() {
+                try { return JSON.parse(localStorage.getItem(_dismissedKey()) || '[]'); }
+                catch(e) { return []; }
+            }
+            function isAlertDismissed(msg) {
+                return getDismissedAlerts().includes(msg);
+            }
+            function persistDismissal(msg) {
+                var dismissed = getDismissedAlerts();
+                if (!dismissed.includes(msg)) {
+                    dismissed.push(msg);
+                    // Keep at most 100 entries to avoid unbounded growth
+                    if (dismissed.length > 100) { dismissed = dismissed.slice(-100); }
+                    try { localStorage.setItem(_dismissedKey(), JSON.stringify(dismissed)); }
+                    catch(e) {}
+                }
+            }
+
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
+                    {% set seen = [] %}
                     {% for category, message in messages %}
-                        showToast('{{ message|safe }}', '{{ category }}');
+                        {% if message not in seen %}
+                            {% if seen.append(message) %}{% endif %}
+                            (function() {
+                                var msg = {{ message|tojson }};
+                                var cat = {{ category|tojson }};
+                                if (!isAlertDismissed(msg)) {
+                                    showToast(msg, cat, 8000, function() { persistDismissal(msg); });
+                                }
+                            })();
+                        {% endif %}
                     {% endfor %}
                 {% endif %}
             {% endwith %}

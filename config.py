@@ -78,6 +78,10 @@ class Config:
     GOLD_API_KEY = os.getenv('GOLD_API_KEY')
     GOLD_API_URL = 'https://www.goldapi.io/api'
 
+    # MetalpriceAPI Configuration (fallback gold price provider)
+    METALPRICE_API_KEY = os.getenv('METALPRICE_API_KEY')
+    METALPRICE_API_URL = 'https://api.metalpriceapi.com/v1'
+
     # Gemini API Configuration - For Chatbox
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
     GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.0-flash')
