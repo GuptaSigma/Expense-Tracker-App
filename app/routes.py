@@ -7,6 +7,7 @@ from app.market_data import get_market_data, get_investment_advice, search_stock
 from app.local_chatbot import LocalAIChatbot
 from app.gemini_chatbot import GeminiChatbot
 from app.openrouter_advisor import OpenRouterAdvisor
+from app.utils import BUDGET_PERCENTAGES
 from flask import current_app
 from datetime import datetime, timedelta
 import json
@@ -86,53 +87,59 @@ def dashboard():
     category_labels = [c[0] for c in categories]
     category_data = [float(c[1]) for c in categories]
     
-    # Budget tracking - percentage-based allocation
-    # Base budget percentages (total = 100%)
-    budget_percentages = {
-        'Food': 16.67,           # 5000/30000
-        'Transport': 10,         # 3000/30000
-        'Entertainment': 6.67,   # 2000/30000
-        'Shopping': 13.33,       # 4000/30000
-        'Bills': 16.67,          # 5000/30000
-        'Health': 10,            # 3000/30000
-        'Education': 20,         # 6000/30000
-        'Other': 6.67            # 2000/30000
-    }
-    
-    # Calculate dynamic budgets based on user's total income
-    # If no income, set minimum budget to help with planning
-    user_income = total_income if total_income > 0 else 30000
-    
+    # Budget tracking - percentage-based allocation for current month
+
+    # Monthly income (current month only) — budget missing means no alerts
+    first_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    monthly_income = db.session.query(db.func.sum(Income.amount))\
+        .filter(
+            Income.user_id == current_user.id,
+            Income.date >= first_of_month
+        ).scalar() or 0
+
     dynamic_budgets = {}
-    for category, percentage in budget_percentages.items():
-        dynamic_budgets[category] = round(user_income * (percentage / 100), 2)
-    
-    # Calculate budget progress for each category
+    if monthly_income > 0:
+        for category, percentage in BUDGET_PERCENTAGES.items():
+            dynamic_budgets[category] = round(monthly_income * (percentage / 100), 2)
+        min_spend_threshold = max(500, monthly_income * 0.05)
+    else:
+        for category in BUDGET_PERCENTAGES:
+            dynamic_budgets[category] = 0
+        min_spend_threshold = 0
+
+    # Calculate budget progress using current month's expenses
     budget_progress = []
     for category, budget_limit in dynamic_budgets.items():
-        spent = db.session.query(db.func.sum(Expense.amount))\
-            .filter_by(user_id=current_user.id, category=category).scalar() or 0
-        percentage = (spent / budget_limit * 100) if budget_limit > 0 else 0
-        
-        # Determine status color
-        if percentage < 50:
+        monthly_spent = db.session.query(db.func.sum(Expense.amount))\
+            .filter(
+                Expense.user_id == current_user.id,
+                Expense.category == category,
+                Expense.date >= first_of_month
+            ).scalar() or 0
+        percentage = (monthly_spent / budget_limit * 100) if budget_limit > 0 else 0
+
+        # Determine status using new rule
+        if budget_limit == 0:
             status = 'safe'
             color = 'green'
-        elif percentage < 80:
+        elif monthly_spent >= budget_limit and monthly_spent >= min_spend_threshold:
+            status = 'danger'
+            color = 'red'
+        elif monthly_spent >= 0.8 * budget_limit and monthly_spent >= min_spend_threshold:
             status = 'caution'
             color = 'yellow'
         else:
-            status = 'danger'
-            color = 'red'
-        
+            status = 'safe'
+            color = 'green'
+
         budget_progress.append({
             'category': category,
-            'spent': float(spent),
+            'spent': float(monthly_spent),
             'limit': budget_limit,
             'percentage': min(percentage, 100),
             'status': status,
             'color': color,
-            'remaining': max(budget_limit - spent, 0)
+            'remaining': max(budget_limit - monthly_spent, 0)
         })
     
     # AI Predictions
@@ -243,10 +250,13 @@ def add_expense():
         db.session.commit()
         
         # Check for overspending alert
-        if optimizer.check_overspending(current_user.id, expense.category):
-            flash(f'Alert: High spending in {expense.category} category!', 'warning')
+        alert_level = optimizer.check_overspending(current_user.id, expense.category)
+        if alert_level == 'alert':
+            flash(f'Alert: You have exceeded your {expense.category} budget this month!', 'error')
+        elif alert_level == 'warning':
+            flash(f'Warning: You are nearing your {expense.category} budget limit this month!', 'warning')
         else:
-            flash('Expense added successfully!')
+            flash('Expense added successfully!', 'success')
         
         return redirect(url_for('main.dashboard'))
     
