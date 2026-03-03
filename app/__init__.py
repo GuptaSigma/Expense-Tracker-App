@@ -52,6 +52,25 @@ def create_app():
         with app.app_context():
             db.create_all()
 
+    # Normalize legacy health-related category names to 'Health'
+    with app.app_context():
+        try:
+            from app.models import Expense
+            import sqlalchemy
+            health_variants = ['healthcare', 'health care', 'healthware', 'helath ware']
+            for variant in health_variants:
+                db.session.execute(
+                    sqlalchemy.text(
+                        "UPDATE expense SET category = 'Health' "
+                        "WHERE LOWER(category) = :variant"
+                    ),
+                    {'variant': variant}
+                )
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            app.logger.warning("Health category migration failed: %s", e)
+
     return app
 
 
