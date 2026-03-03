@@ -200,7 +200,27 @@ OTP email verification is mandatory for all normal (email/password) registration
 - Users authenticating via Google OAuth are trusted and may log in without OTP verification.
 - Login is blocked for unverified users with the message: *"Login blocked: Verify OTP from email before login."*
 
-#### 6. Verify
+#### 6. Google OAuth (optional)
+
+To enable **Sign in with Google**:
+
+1. Go to [Google Cloud Console → APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials).
+2. Create an **OAuth 2.0 Client ID** (Application type: **Web application**).
+3. Under **Authorized redirect URIs** add:
+   - `http://localhost:5000/auth/google/callback` (local development)
+   - `https://<your-app>.onrender.com/auth/google/callback` (production)
+4. Download the client ID and secret — **do not** commit the downloaded JSON file to the repository.
+5. Add the following environment variables to your Render service (or local `.env`):
+
+| Variable | Value |
+|---|---|
+| `GOOGLE_CLIENT_ID` | Your OAuth 2.0 client ID |
+| `GOOGLE_CLIENT_SECRET` | Your OAuth 2.0 client secret |
+| `GOOGLE_REDIRECT_URI` | `https://<your-app>.onrender.com/auth/google/callback` |
+
+> **Security note:** Never commit `client_secret*.json` or any OAuth credential file. The `.gitignore` already blocks these patterns.
+
+#### 7. Verify
 
 Visit `https://<your-app>.onrender.com/register`. You should see the registration page with no database errors.
 

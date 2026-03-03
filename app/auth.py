@@ -188,7 +188,7 @@ def google_login():
         return redirect(url_for('auth.login'))
     
     google = oauth.google
-    redirect_uri = url_for('auth.google_callback', _external=True)
+    redirect_uri = Config.GOOGLE_REDIRECT_URI
     return google.authorize_redirect(redirect_uri)
 
 

@@ -66,3 +66,8 @@ instance/
 # API Keys (extra safety)
 config_local.py
 secrets.py
+
+# Google OAuth credentials – never commit these
+client_secret*.json
+credentials.json
+token.json
