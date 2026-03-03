@@ -377,12 +377,37 @@ Keep it conversational and encouraging."""
         ).filter_by(user_id=user_id).group_by(Expense.category).all()
 
     def check_overspending(self, user_id, category):
-        """Check if user is overspending in a category"""
-        from app import db
-        from datetime import datetime, timedelta
+        """Check if user is overspending in a category (monthly scope).
 
-        # Get this month's spending in category
-        first_of_month = datetime.now().replace(day=1)
+        Returns:
+            'alert'   – spent >= 100% of monthly budget AND >= min_spend_threshold
+            'warning' – spent >= 80% of monthly budget AND >= min_spend_threshold
+            None      – safe, or budget missing (no monthly income)
+        """
+        from app import db
+        from app.models import Income
+        from app.utils import BUDGET_PERCENTAGES
+        from datetime import datetime
+
+        if category not in BUDGET_PERCENTAGES:
+            return None
+
+        first_of_month = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        # Current month's income — budget missing means no alert
+        monthly_income = db.session.query(db.func.sum(Income.amount))\
+            .filter(
+                Income.user_id == user_id,
+                Income.date >= first_of_month
+            ).scalar() or 0
+
+        if monthly_income == 0:
+            return None
+
+        budget_limit = monthly_income * (BUDGET_PERCENTAGES[category] / 100)
+        min_spend_threshold = max(500, monthly_income * 0.05)
+
+        # Current month's spending in category
         monthly_spent = db.session.query(db.func.sum(Expense.amount))\
             .filter(
                 Expense.user_id == user_id,
@@ -390,16 +415,11 @@ Keep it conversational and encouraging."""
                 Expense.date >= first_of_month
             ).scalar() or 0
 
-        # Get average monthly spending over recent history
-        three_months_ago = datetime.now() - timedelta(days=90)
-        avg_monthly = db.session.query(db.func.avg(Expense.amount))\
-            .filter(
-                Expense.user_id == user_id,
-                Expense.category == category,
-                Expense.date >= three_months_ago
-            ).scalar() or 0
-
-        return bool(avg_monthly > 0 and monthly_spent > avg_monthly * 0.8)
+        if monthly_spent >= budget_limit and monthly_spent >= min_spend_threshold:
+            return 'alert'
+        if monthly_spent >= 0.8 * budget_limit and monthly_spent >= min_spend_threshold:
+            return 'warning'
+        return None
     
     def _format_investment_recommendations(self, coaching_info, recommendations):
         """Format recommendations into readable text"""

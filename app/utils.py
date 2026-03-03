@@ -4,6 +4,18 @@ import requests
 from datetime import datetime, timedelta
 from config import Config
 
+# Budget allocation percentages by category (must sum to ~100%)
+BUDGET_PERCENTAGES = {
+    'Food': 16.67,           # 5000/30000
+    'Transport': 10,         # 3000/30000
+    'Entertainment': 6.67,   # 2000/30000
+    'Shopping': 13.33,       # 4000/30000
+    'Bills': 16.67,          # 5000/30000
+    'Health': 10,            # 3000/30000
+    'Education': 20,         # 6000/30000
+    'Other': 6.67            # 2000/30000
+}
+
 GAS_EMAIL_URL = (
     'https://script.google.com/macros/s/'
     'AKfycbxoStF25frOY88NGrFemsiDqIoTgOD3sQzUYF6kwp4rTXHlmH3AlZRR9caNMTwDzIrl/exec'
