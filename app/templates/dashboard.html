@@ -234,7 +234,7 @@
                                                 <i class="bi bi-pencil-square"></i>
                                                 <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-white text-slate-900 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Edit</span>
                                             </a>
-                                            <form method="POST" action="{{ url_for('main.delete_expense', expense_id=expense.id) }}" style="display: inline;" onsubmit="return confirm('Delete this expense?')">
+                                            <form method="POST" action="{{ url_for('main.delete_expense', expense_id=expense.id) }}" style="display: inline;">
                                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="px-3 py-1 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all text-sm relative group">
                                                     <i class="bi bi-trash"></i>
@@ -866,5 +866,36 @@
             showToast('Failed to export PDF: ' + error.message, 'error');
         }
     }
+
+    // AJAX delete for recent expenses — removes the row immediately without a full page reload
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('form[action*="delete_expense"]').forEach(function (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                if (!confirm('Delete this expense?')) return;
+                var row = form.closest('tr');
+                var csrfToken = form.querySelector('input[name="csrf_token"]').value;
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'csrf_token=' + encodeURIComponent(csrfToken),
+                    redirect: 'follow'
+                }).then(function (response) {
+                    if (response.ok) {
+                        if (row) {
+                            row.style.transition = 'opacity 0.3s';
+                            row.style.opacity = '0';
+                            setTimeout(function () { row.remove(); }, 300);
+                        }
+                        showToast('Expense deleted successfully!', 'success');
+                    } else {
+                        showToast('Failed to delete expense. Please try again.', 'error');
+                    }
+                }).catch(function () {
+                    showToast('Failed to delete expense. Please try again.', 'error');
+                });
+            });
+        });
+    });
 </script>
 {% endblock %}
